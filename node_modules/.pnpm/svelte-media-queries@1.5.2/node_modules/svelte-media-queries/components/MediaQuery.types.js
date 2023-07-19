@@ -1,0 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+export var Types;
+(function (Types) {
+    Types["string"] = "string";
+    Types["array"] = "array";
+    Types["object"] = "object";
+})(Types || (Types = {}));
