@@ -2,13 +2,12 @@
     import '../app.css'
     import type { PageData } from './$types'
     import { dataStore } from '$lib/stores'
-
-    import Seo from '$lib/Seo.svelte'
     import Particles from '$lib/Particles.svelte'
     import Navbar from '$lib/Navbar.svelte'
     import Footer from '$lib/Footer.svelte'
     // import LiveChat from '$lib/LiveChat.svelte'
     
+    /*
     export let data: PageData
     
     $: {
@@ -18,7 +17,8 @@
             description: data?.description || data.description
         }
     }
-
+    */
+   
     console.log(
         `%cCoffee Code Studio`,
         `
@@ -64,8 +64,6 @@
         background-color: #111827;
     }
 </style>
-
-<Seo />
 
 <Particles />
 

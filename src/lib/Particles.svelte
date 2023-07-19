@@ -10,8 +10,6 @@
         ParticlesComponent = module.default
     })
 
-    // links: #86efac
-
     let particlesConfig = {
         particles: {
             move: {
