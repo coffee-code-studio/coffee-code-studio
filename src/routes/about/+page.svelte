@@ -1,5 +1,4 @@
 <script>
-  // remove code image and add gif instead of scrolling down home page of paint co website
   import codeImage from '$lib/assets/rust-code-image-3.png'
   import altMainLogo from '$lib/assets/ccs-alt-logo.png'
   import schoodicLogo from '$lib/assets/new-schoodic-logo-bluewhite.svg'
@@ -8,9 +7,6 @@
   import denoLogo from '$lib/assets/deno-logo.png'
   import rustLogo from '$lib/assets/rust-logo.png'
   import wasmLogo from '$lib/assets/wasm-logo.png'
-  import { disableScrollHandling } from '$app/navigation';
-
-  // make the rust code image fit properly on mobile screens
 </script>
 
 <svelte:head>
