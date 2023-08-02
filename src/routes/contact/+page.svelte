@@ -17,7 +17,7 @@
         {
             "@content": "http://schema.org",
             "@type": "WebPage",
-            "@id": "https://www.coffeecodestudio.com/contact"
+            "@id": "https://www.coffeecodestudio.com/contact",
             "name": "Columbus Ohio Web Design | Coffee Code Studio",
             "url": "https://www.coffeecodestudio.com/contact",
             "image": "https://coffeecodestudio.com/coffee-code-studio-logo.png"

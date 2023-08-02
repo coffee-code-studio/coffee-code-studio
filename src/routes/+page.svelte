@@ -21,7 +21,7 @@
         {
             "@content": "http://schema.org",
             "@type": "WebPage",
-            "@id": "https://www.coffeecodestudio.com/"
+            "@id": "https://www.coffeecodestudio.com/",
             "name": "Columbus Ohio Web Design | Coffee Code Studio",
             "url": "https://www.coffeecodestudio.com/",
             "image": "https://coffeecodestudio.com/coffee-code-studio-logo.png"
