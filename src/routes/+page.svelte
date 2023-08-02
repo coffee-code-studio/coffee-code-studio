@@ -2,6 +2,33 @@
   import mainLogo from '$lib/assets/coffee-code-studio-logo.png'
 </script>
 
+<svelte:head>
+    <title>Coffee Code Studio | Your premier destination for affordable high quality websites | Based in Columbus, Ohio</title>
+    <meta name="description" content="Coffee Code Studio">
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="Coffee Code Studio" />
+    <meta property="og:title" content="Coffee Code Studio | Central Ohio Web Design" />
+    <meta property="og:description" content="At Coffee Code Studio, our mission is to deliver high quality, afforable, cutting edge web apps, for your business." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://coffeecodestudio.com/" />
+    <meta property="og:image" content="https://coffeecodestudio.com/coffee-code-studio-logo.png" />
+    <meta property="article:publisher" content="https://www.facebook.com/CoffeeCodeStudio" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@coffeecodestudio" />
+    <!---<link rel="alternate" type="application/rss+xml" title="Ohio Web Design" hreflang="en" href="https://coffeecodestudio.com/" />--->
+
+    <script type="application/ld+json">
+        {
+            "@content": "http://schema.org",
+            "@type": "WebPage",
+            "@id": "https://www.coffeecodestudio.com/"
+            "name": "Columbus Ohio Web Design | Coffee Code Studio",
+            "url": "https://www.coffeecodestudio.com/",
+            "image": "https://coffeecodestudio.com/coffee-code-studio-logo.png"
+        }
+    </script>
+</svelte:head>
+
 <!------------------------- Header ------------------------------>
 
 <section class="bg-gray-900 text-white">
@@ -172,7 +199,7 @@
   <div class="py-8 lg:py-16 px-4 mx-auto max-w-screen-md">
       <h2 class="mb-4 text-5xl  font-semibold text-center text-gray-900 dark:text-white">Contact Us</h2>
       <p class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-300 text-xl">Interested in our services? Have a technical question? Reach out to us.</p>
-      <form target="_blank" action="https://formsubmit.co/reed11tim@gmail.com" method="POST" class="space-y-8">
+      <form action="https://submit-form.com/6duvexM5" name="__honeypot" class="space-y-8">
           <div>
               <label for="email" class="block mb-2 text-md font-medium text-gray-900 dark:text-gray-300">Your email</label>
               <input type="email" id="email" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-900 dark:border-gray-600 dark:placeholder-gray-700 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light" placeholder="name@flowbite.com" required>

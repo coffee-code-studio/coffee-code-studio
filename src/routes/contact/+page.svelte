@@ -1,7 +1,30 @@
-<script>
-    
-</script>
-  
+<svelte:head>
+    <title>Contact Coffee Code Studio | Your premier destination for affordable high quality websites | Based in Columbus, Ohio</title>
+    <meta name="description" content="Coffee Code Studio">
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="Coffee Code Studio" />
+    <meta property="og:title" content="Contact Coffee Code Studio | Central Ohio Web Design" />
+    <meta property="og:description" content="At Coffee Code Studio, our mission is to deliver high quality, afforable, cutting edge web apps, for your business." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://coffeecodestudio.com/contact" />
+    <meta property="og:image" content="https://coffeecodestudio.com/coffee-code-studio-logo.png" />
+    <meta property="article:publisher" content="https://www.facebook.com/CoffeeCodeStudio" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@coffeecodestudio" />
+    <!---<link rel="alternate" type="application/rss+xml" title="Ohio Web Design" hreflang="en" href="https://coffeecodestudio.com/" />--->
+
+    <script type="application/ld+json">
+        {
+            "@content": "http://schema.org",
+            "@type": "WebPage",
+            "@id": "https://www.coffeecodestudio.com/contact"
+            "name": "Columbus Ohio Web Design | Coffee Code Studio",
+            "url": "https://www.coffeecodestudio.com/contact",
+            "image": "https://coffeecodestudio.com/coffee-code-studio-logo.png"
+        }
+    </script>
+</svelte:head>
+
 <section class="bg-white dark:bg-gray-900 mb-20 mt-20">
   <div class="container px-6 py-12 mx-auto">
       <div class="lg:flex lg:items-center lg:-mx-6">
@@ -31,11 +54,12 @@
           </div>
 
           <div class="mt-8 lg:w-1/2 lg:mx-6">
-              <div
-                  class="w-full px-8 py-10 mx-auto overflow-hidden bg-white rounded-lg shadow-2xl dark:bg-gray-900 lg:max-w-xl shadow-gray-300/50 dark:shadow-black/50">
-                  <h1 class="text-lg font-medium text-gray-700">What do you want to ask?</h1>
+              <div class="w-full px-8 py-10 mx-auto overflow-hidden bg-white rounded-lg shadow-2xl dark:bg-gray-900 lg:max-w-xl shadow-gray-300/50 dark:shadow-black/50">
+                <h1 class="text-lg font-medium text-gray-700">
+                    What do you want to ask?
+                </h1>
 
-                  <form target="_blank" action="https://formsubmit.co/reed11tim@gmail.com" method="POST" class="mt-6">
+                  <form action="https://submit-form.com/6duvexM5" name="__honeypot" class="mt-6">
                       <div class="flex-1">
                           <label class="block mb-2 text-sm text-gray-600 dark:text-gray-200">Full Name</label>
                           <input type="text" placeholder="Your name" class="block w-full px-5 py-3 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40" />
@@ -51,7 +75,7 @@
                           <textarea class="block w-full h-32 px-5 py-3 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md md:h-48 dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40" placeholder="Message"></textarea>
                       </div>
 
-                      <button class="w-full px-6 py-3 mt-6 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-md hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                      <button type="submit" class="w-full px-6 py-3 mt-6 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-md hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                           get in touch
                       </button>
                   </form>

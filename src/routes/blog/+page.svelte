@@ -22,7 +22,7 @@
 
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
             <div>
-                <img class="object-cover object-center w-full h-64 rounded-lg lg:h-80" src={seoLogo} alt="">
+                <img class="object-cover object-center w-full h-64 rounded-lg lg:h-80" src={seoLogo} alt="The Importance of SEO">
 
                 <div class="mt-8">
 
@@ -38,14 +38,14 @@
 
                     <div class="flex items-center justify-between mt-4">
                         <div>
-                            <a href="#" class="text-lg font-medium text-gray-700 dark:text-gray-300 hover:underline hover:text-gray-500">
+                            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">
                                 Tim Reed
-                            </a>
+                            </p>
 
                             <p class="text-sm text-gray-500 dark:text-gray-400">June 5, 2023</p>
                         </div>
 
-                        <a href="#" class="inline-block text-blue-500 underline hover:text-blue-400">Read more</a>
+                        <a href="/blog/the-importance-of-seo" class="inline-block text-blue-500 underline hover:text-blue-400">Read more</a>
                     </div>
 
                 </div>
@@ -68,14 +68,14 @@
 
                     <div class="flex items-center justify-between mt-4">
                         <div>
-                            <a href="#" class="text-lg font-medium text-gray-700 dark:text-gray-300 hover:underline hover:text-gray-500">
+                            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">
                                 Tim Reed
-                            </a>
+                            </p>
 
                             <p class="text-sm text-gray-500 dark:text-gray-400">Feb 16, 2023</p>
                         </div>
 
-                        <a href="#" class="inline-block text-blue-500 underline hover:text-blue-400">Read more</a>
+                        <a href="/blog/the-role-of-typography-in-web-design" class="inline-block text-blue-500 underline hover:text-blue-400">Read more</a>
                     </div>
 
                 </div>
@@ -98,14 +98,14 @@
 
                     <div class="flex items-center justify-between mt-4">
                         <div>
-                            <a href="#" class="text-lg font-medium text-gray-700 dark:text-gray-300 hover:underline hover:text-gray-500">
+                            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">
                                 Tim Reed
-                            </a>
+                            </p>
 
                             <p class="text-sm text-gray-500 dark:text-gray-400">December 21, 2022</p>
                         </div>
 
-                        <a href="#" class="inline-block text-blue-500 underline hover:text-blue-400">Read more</a>
+                        <a href="/blog/essential-security-measures-for-web-development" class="inline-block text-blue-500 underline hover:text-blue-400">Read more</a>
                     </div>
                 </div>
             </div>

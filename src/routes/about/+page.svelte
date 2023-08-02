@@ -8,9 +8,37 @@
   import denoLogo from '$lib/assets/deno-logo.png'
   import rustLogo from '$lib/assets/rust-logo.png'
   import wasmLogo from '$lib/assets/wasm-logo.png'
+  import { disableScrollHandling } from '$app/navigation';
 
   // make the rust code image fit properly on mobile screens
 </script>
+
+<svelte:head>
+    <title>About Coffee Code Studio | Your premier destination for affordable high quality websites | Based in Columbus, Ohio</title>
+    <meta name="description" content="Coffee Code Studio">
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="Coffee Code Studio" />
+    <meta property="og:title" content="About Coffee Code Studio | Central Ohio Web Design" />
+    <meta property="og:description" content="At Coffee Code Studio, our mission is to deliver high quality, afforable, cutting edge web apps, for your business." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://coffeecodestudio.com/about" />
+    <meta property="og:image" content="https://coffeecodestudio.com/coffee-code-studio-logo.png" />
+    <meta property="article:publisher" content="https://www.facebook.com/CoffeeCodeStudio" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@coffeecodestudio" />
+    <!---<link rel="alternate" type="application/rss+xml" title="Ohio Web Design" hreflang="en" href="https://coffeecodestudio.com/" />--->
+
+    <script type="application/ld+json">
+        {
+            "@content": "http://schema.org",
+            "@type": "WebPage",
+            "@id": "https://www.coffeecodestudio.com/about"
+            "name": "Columbus Ohio Web Design | Coffee Code Studio",
+            "url": "https://www.coffeecodestudio.com/about",
+            "image": "https://coffeecodestudio.com/coffee-code-studio-logo.png"
+        }
+    </script>
+</svelte:head>
 
 <section class="bg-white dark:bg-gray-900 mt-20 mb-20">
     <div class="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
