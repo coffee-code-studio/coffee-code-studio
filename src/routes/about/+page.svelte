@@ -1,5 +1,4 @@
 <script>
-  import codeImage from '$lib/assets/rust-code-image-3.png'
   import altMainLogo from '$lib/assets/ccs-alt-logo.png'
   import schoodicLogo from '$lib/assets/new-schoodic-logo-bluewhite.svg'
 
