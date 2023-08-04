@@ -59,7 +59,7 @@
                     What do you want to ask?
                 </h1>
 
-                  <form action="https://submit-form.com/6duvexM5" name="__honeypot" class="mt-6">
+                  <form action="https://submit-form.com/6duvexM5" class="mt-6">
                       <div class="flex-1">
                           <label class="block mb-2 text-sm text-gray-600 dark:text-gray-200">Full Name</label>
                           <input type="text" placeholder="Your name" class="block w-full px-5 py-3 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40" />

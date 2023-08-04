@@ -69,7 +69,7 @@
         </span>
         <div class="ml-4">
           <h2 class="text-xl font-bold">SEO and Digital Marketing</h2>
-          <p class="mt-1 text-lg text-gray-300"> At Coffee Code Studio, we use a data-driven approach to optimize websites for search engines and implement effective digital marketing strategies that drive traffic and increase conversions. </p>
+          <p class="mt-1 text-lg text-gray-300">At Coffee Code Studio, we use a data-driven approach to optimize websites for search engines and implement effective digital marketing strategies that drive traffic and increase conversions. </p>
         </div>
       </div>
       <div class="flex items-start">
@@ -80,7 +80,7 @@
         </span>
         <div class="ml-4">
           <h2 class="text-xl font-bold">Web Design and Development</h2>
-          <p class="mt-1 text-lg text-gray-300"> At Coffee Code Studio, we provide customized web design and development solutions tailored to our clients' unique needs and preferences. Our team of skilled professionals combines creativity, innovation, and expertise to deliver exceptional results. </p>
+          <p class="mt-1 text-lg text-gray-300">At Coffee Code Studio, we provide customized web design and development solutions tailored to our clients' unique needs and preferences. Our team of skilled professionals combines creativity, innovation, and expertise to deliver exceptional results. </p>
         </div>
       </div>
       <div class="flex items-start">
@@ -91,7 +91,7 @@
         </span>
         <div class="ml-4">
           <h2 class="text-xl font-bold">Mobile Apps</h2>
-          <p class="mt-1 text-lg text-gray-300"> At Coffee Code Studio, we develop mobile apps using the latest technologies and frameworks to deliver high-quality, user-friendly applications that meet our clients' specific requirements. </p>
+          <p class="mt-1 text-lg text-gray-300">At Coffee Code Studio, we develop mobile apps using the latest technologies and frameworks to deliver high-quality, user-friendly applications that meet our clients' specific requirements. </p>
         </div>
       </div>
       <div class="flex items-start">
@@ -103,7 +103,7 @@
         <div class="ml-4">
           <h2 class="text-xl font-bold">Free Hosting</h2>
           <p class="mt-1 text-lg text-gray-300">
-            At Coffee Code Studio, we offer free deployment and hosting services for your web applications on the edge or in the cloud. Your applications will run smoothly and seamlessly, allowing you to focus on your business goals.
+            At Coffee Code Studio, we offer hosting from reliable cloud and edge services such as Netlify and Amazon AWS. Your applications will run smoothly and seamlessly across the globe, allowing you to focus on your business goals.
           </p>
         </div>
       </div>
@@ -199,7 +199,7 @@
   <div class="py-8 lg:py-16 px-4 mx-auto max-w-screen-md">
       <h2 class="mb-4 text-5xl  font-semibold text-center text-gray-900 dark:text-white">Contact Us</h2>
       <p class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-300 text-xl">Interested in our services? Have a technical question? Reach out to us.</p>
-      <form action="https://submit-form.com/6duvexM5" name="__honeypot" class="space-y-8">
+      <form action="https://submit-form.com/6duvexM5" class="space-y-8">
           <div>
               <label for="email" class="block mb-2 text-md font-medium text-gray-900 dark:text-gray-300">Your email</label>
               <input type="email" id="email" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-900 dark:border-gray-600 dark:placeholder-gray-700 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light" placeholder="name@flowbite.com" required>
