@@ -1,23 +1,33 @@
 <script lang="ts">
     import '../app.css'
+    import { onMount } from 'svelte'
     import type { PageData } from './$types'
     import { dataStore } from '$lib/stores'
     import Particles from '$lib/Particles.svelte'
     import Navbar from '$lib/Navbar.svelte'
     import Footer from '$lib/Footer.svelte'
-    // import LiveChat from '$lib/LiveChat.svelte'
-    
+
+    let ipAddress
+
     /*
-    export let data: PageData
-    
+    let test = onMount(async () => {
+        const res = await fetch('/ip-address')
+        ipAddress = await res.json()
+    })
+
     $: {
-        $dataStore = {
-            ...data,
-            title: dataStore || data.title,
-            description: data?.description || data.description
-        }
+        console.log(test)
     }
+
+    async function fetchIp() {
+        const res = await fetch('/ipAddress')
+        ipAddress = await res.json()
+    }
+
     */
+
+    // const logIp = fetchIp()
+    // console.log(logIp)
    
     console.log(
         `%cCoffee Code Studio`,

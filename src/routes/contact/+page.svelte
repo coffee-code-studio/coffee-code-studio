@@ -29,7 +29,7 @@
   <div class="container px-6 py-12 mx-auto">
       <div class="lg:flex lg:items-center lg:-mx-6">
           <div class="lg:w-1/2 lg:mx-6">
-              <h1 class="text-2xl font-semibold text-gray-800 capitalize dark:text-white lg:text-3xl">
+              <h1 class="text-3xl font-semibold text-gray-800 capitalize dark:text-white lg:text-5xl">
                 Contact Us
               <br>
               </h1>
@@ -40,7 +40,7 @@
                           <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
 
-                      <span class="mx-2 text-gray-700 truncate w-72 dark:text-gray-400">(614) 956-9590</span>
+                      <span class="mx-2 text-gray-700 truncate w-72 dark:text-gray-400 lg:text-2xl">(614) 956-9590</span>
                   </p>
 
                   <p class="flex items-start -mx-2">
@@ -48,7 +48,7 @@
                           <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
 
-                      <span class="mx-2 text-gray-700 truncate w-72 dark:text-gray-400">coffeecodestudio@protonmail.com</span>
+                      <span class="mx-2 text-gray-700 truncate w-72 dark:text-gray-400 lg:text-1xl">coffeecodestudio@protonmail.com</span>
                   </p>
               </div>
           </div>

@@ -8,7 +8,10 @@ const config: UserConfig = {
 	},
 	build: {
 		sourcemap: false,
+	},
+	ssr: {
+		noExternal: ["tsparticles", "tsparticles-slim", "tsparticles-engine", "svelte-particles"],
 	}
-};
+}
 
 export default config
