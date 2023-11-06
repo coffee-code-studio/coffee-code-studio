@@ -1,5 +1,7 @@
 <script lang="ts">
 	import mainLogo from '$lib/assets/coffee-code-studio-logo.png'
+
+	const currentYear = new Date().getFullYear()
 </script>
 
 <footer aria-label="Site Footer" class="bg-gray-50 dark:bg-gray-900">
@@ -22,7 +24,7 @@
 		  </svg>
 		  --->
 		</div>
-		<p class="mt-4 text-center text-sm text-gray-500 dark:text-gray-400 lg:mt-0 lg:text-right">Copyright &copy; 2023 Coffee Code Studio. All rights reserved.</p>
+		<p class="mt-4 text-center text-sm text-gray-500 dark:text-gray-400 lg:mt-0 lg:text-right">Copyright &copy; {currentYear} Coffee Code Studio. All rights reserved.</p>
 	  </div>
 	</div>
 </footer>

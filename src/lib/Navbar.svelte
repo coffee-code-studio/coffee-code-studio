@@ -38,21 +38,21 @@
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="/about"
+								href="#"
 								on:click={hideMenu}>About</a
 							>
 						</li>
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="/blog"
+								href="#"
 								on:click={hideMenu}>Blog</a
 							>
 						</li>
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="/contact"
+								href="#"
 								on:click={hideMenu}>Contact</a
 							>
 						</li>

@@ -39,6 +39,12 @@
         padding: 1rem;
         `
     )
+
+    /*
+            :global(body) {
+        background-color: #111827;
+    }
+    */
 </script>
 <!---
 <svelte:head>
@@ -77,8 +83,18 @@
 
 
 <style>
-    :global(body) {
-        background-color: #111827;
+    @media (prefers-color-scheme: dark) {
+        :global(body) {
+            background-color: #111827;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+
+        :global(body) {
+
+            background-color: #ffffff;
+        }
     }
 </style>
 
