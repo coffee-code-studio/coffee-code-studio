@@ -63,6 +63,7 @@
 						<button
 							on:click={toggleMenu}
 							class="rounded bg-gray-100 p-2 text-gray-600 transition hover:text-gray-600/75 dark:bg-gray-800 dark:text-white dark:hover:text-white/75"
+							aria-label="Toggle mobile navigation"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
