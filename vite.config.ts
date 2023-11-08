@@ -11,6 +11,11 @@ const config: UserConfig = {
 	},
 	ssr: {
 		noExternal: ["tsparticles", "tsparticles-slim", "tsparticles-engine", "svelte-particles"],
+	},
+	server: {
+		proxy: {
+			'/invoice': 'http://127.0.0.1:8000'
+		}
 	}
 }
 

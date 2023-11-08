@@ -68,7 +68,7 @@
           Contact us
         </a>
 			</div>
-      <div class="{prefersDarkTheme ? 'bg-gray-900' : 'bg-white'} mt-12">
+      <div class="{prefersDarkTheme ? 'text-gray-900' : 'text-white'} mt-12">
         {#if prefersDarkTheme}
           <img src={lightDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20">
         {:else}
