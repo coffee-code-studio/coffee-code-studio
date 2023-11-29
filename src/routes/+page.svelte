@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte'
   import lightDownArrow from '$lib/assets/light-down-arrow.png'
   import darkDownArrow from '$lib/assets/dark-down-arrow.png'
+  import codeImage from '$lib/assets/code.png'
 
   let prefersDarkTheme: any
   let mediaQuery: any
@@ -78,6 +79,62 @@
 		</div>
 	</div>
 </section>
+
+
+
+
+<!--  about  -->
+<section>
+  <div class="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+    <div class="max-w-3xl">
+      <h2 class="text-5xl font-bold sm:text-5xl text-gray-800 dark:text-white">
+        About Us
+      </h2>
+    </div>
+
+    <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
+      <div class="relative h-64 overflow-hidden sm:h-80 lg:h-full">
+        <img
+          alt="Party"
+          src={codeImage}
+          draggable="false"
+          class="absolute inset-0 h-full w-full object-cover pointer-events-none"
+        />
+      </div>
+
+      <div class="lg:py-16">
+        <article class="space-y-4 text-lg text-gray-500 dark:text-gray-300">
+          <p>
+            <bold class="text-blue-500 font-medium">Coffee Code Studio</bold> stands out as Central Ohio's premier 
+            destination for top-tier web development and design. Founded 
+            by a group of passionate tech enthusiasts in the heart of 
+            Columbus, our team excels in turning business dreams into 
+            digital realities, both locally and internationally. Our roots 
+            in Columbus give us a unique perspective, allowing us to 
+            blend global digital trends with a touch of local charm.
+          </p>
+
+          <p>
+            <bold class="text-blue-500 font-medium">Coffee Code Studio</bold> harnesses the latest in cutting-edge 
+            web technologies to create stunning, high-performance digital 
+            solutions. We're dedicated to understanding and meeting your 
+            needs, accompanying you every step of the way from the initial 
+            concept to the launch of your project. Our commitment is to bring 
+            your vision to life, precisely as you imagine it, ensuring that 
+            every interaction with us adds value to your business journey.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
 
 <!------------------------- What we offer -------------------------->
 
@@ -182,7 +239,7 @@
 
               <div class="flex items-center mt-8 -mx-2">
                   <div class="mx-2">
-                      <h1 class="font-semibold text-gray-800 dark:text-white">- David</h1>
+                      <h1 class="font-semibold text-gray-800 dark:text-white"><bold class="text-blue-500">- David</bold></h1>
                   </div>
               </div>
           </div>
@@ -196,7 +253,7 @@
 
               <div class="flex items-center mt-8 -mx-2">
                   <div class="mx-2">
-                      <h1 class="font-semibold text-gray-800 dark:text-white">- Jacob</h1>
+                      <h1 class="font-semibold text-gray-800 dark:text-white"><bold class="text-blue-500">- Jacob</bold></h1>
                   </div>
               </div>
           </div>
@@ -211,7 +268,7 @@
 
               <div class="flex items-center mt-8 -mx-2">
                   <div class="mx-2">
-                      <h1 class="font-semibold text-gray-800 dark:text-white">- Nancy</h1>
+                      <h1 class="font-semibold text-gray-800 dark:text-white"><bold class="text-blue-500">- Nancy</bold></h1>
                   </div>
               </div>
           </div>
@@ -223,8 +280,29 @@
 
 <section class="bg-white dark:bg-gray-900 mb-40 mt-40">
   <div class="py-8 lg:py-16 px-4 mx-auto max-w-screen-md">
-      <h2 class="mb-4 text-5xl  font-semibold text-center text-gray-900 dark:text-white">Contact Us</h2>
+      <h2 class="mb-4 text-5xl font-semibold text-center text-gray-900 dark:text-white">Contact Us</h2>
       <p class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-300 text-xl">Interested in our services? Have a technical question? Reach out to us.</p>
+
+
+      <div class="mt-6 space-y-8 md:mt-8 mb-8 lg:mb-16">
+        <p class="flex items-start -mx-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mx-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+
+            <span class="mx-2 text-gray-700 truncate w-72 dark:text-gray-400 lg:text-2xl">(614) 956-9590</span>
+        </p>
+
+        <p class="flex items-start -mx-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mx-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+
+            <span class="mx-2 text-gray-700 truncate w-72 dark:text-gray-400 lg:text-1xl">coffeecodestudio@protonmail.com</span>
+        </p>
+    </div>
+
+
       <form action="https://submit-form.com/7eWAXhnd" class="space-y-8">
           <div>
             <input
