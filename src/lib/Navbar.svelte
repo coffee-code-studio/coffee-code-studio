@@ -1,6 +1,27 @@
 <script lang="ts">
+	import { smoothScroll } from '../utils/smoothScroll'
+	import { isMenuOpenStore } from './stores'
 	import mainLogo from '$lib/assets/coffee-code-studio-logo.png'
 
+	let isMenuOpen: boolean = false
+
+	function toggleMenu(): void {
+		isMenuOpen = !isMenuOpen
+		isMenuOpenStore.set(isMenuOpen)
+		if (isMenuOpen) {
+			document.body.classList.add('overflow-hidden')
+		} else {
+			document.body.classList.remove('overflow-hidden')
+		}
+	}
+
+	function hideMenu(): void {
+		isMenuOpen = false
+		isMenuOpenStore.set(isMenuOpen)
+		document.body.classList.remove('overflow-hidden')
+	}
+
+	/*
 	let isMenuOpen: boolean = false
 
 	function toggleMenu(): void {
@@ -10,9 +31,10 @@
 	function hideMenu(): void {
 		isMenuOpen = false
 	}
+	*/
 </script>
 
-<header aria-label="Site Header" class="bg-white dark:bg-gray-900">
+<header aria-label="Site Header" class="sticky top-0 bg-white dark:bg-gray-900">
 	<div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
 			<div class="flex-1 md:flex md:items-center md:gap-12">
@@ -31,28 +53,44 @@
 				<nav aria-label="Site Nav" class="hidden md:block">
 					<ul class="flex items-center gap-6 text-sm">
 						<li>
-							<a class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" href="/" on:click={hideMenu}>
+							<a 
+								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" 
+								href="#home" 
+								use:smoothScroll
+								on:click={hideMenu}>
 								Home
+							</a>
+						</li>
+						<li>
+							<a 
+								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" 
+								href="#about" 
+								use:smoothScroll
+								on:click={hideMenu}>
+								About
 							</a>
 						</li>
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="#"
-								on:click={hideMenu}>About</a
+								href="#services"
+								use:smoothScroll
+								on:click={hideMenu}>Services</a
 							>
 						</li>
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="#"
+								href="#blog"
+								use:smoothScroll
 								on:click={hideMenu}>Blog</a
 							>
 						</li>
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="#"
+								href="#contact"
+								use:smoothScroll
 								on:click={hideMenu}>Contact</a
 							>
 						</li>
@@ -94,28 +132,35 @@
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="/"
+								href="#home"
 								on:click={hideMenu}>Home</a
 							>
 						</li>
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="/about"
+								href="#about"
 								on:click={hideMenu}>About</a
 							>
 						</li>
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="/blog"
+								href="#services"
+								on:click={hideMenu}>Services</a
+							>
+						</li>
+						<li>
+							<a
+								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
+								href="#blog"
 								on:click={hideMenu}>Blog</a
 							>
 						</li>
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="/contact"
+								href="#contact"
 								on:click={hideMenu}>Contact</a
 							>
 						</li>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
+  import { isMenuOpenStore } from '$lib/stores'
   import lightDownArrow from '$lib/assets/light-down-arrow.png'
   import darkDownArrow from '$lib/assets/dark-down-arrow.png'
   import codeImage from '$lib/assets/code.png'
@@ -52,7 +53,7 @@
 
 <!------------------------- Header ------------------------------>
 
-<section class="bg-white dark:bg-gray-900 text-white">
+<section id="home" class="bg-white dark:bg-gray-900 text-white">
 	<div class="mx-auto max-w-screen-xl px-4 py-32 lg:flex lg:h-screen lg:items-center">
 		<div class="mx-auto max-w-3xl text-center">
 			<h1 class="bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 bg-clip-text text-6xl font-extrabold text-transparent sm:text-5x1">
@@ -69,22 +70,21 @@
           Contact us
         </a>
 			</div>
-      <div class="{prefersDarkTheme ? 'text-gray-900' : 'text-white'} mt-12">
-        {#if prefersDarkTheme}
-          <img src={lightDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20">
-        {:else}
-          <img src={darkDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20">
-        {/if}
-      </div>
+      {#if !$isMenuOpenStore}
+        <div class="{prefersDarkTheme ? 'text-gray-900' : 'text-white'} mt-12">
+            {#if prefersDarkTheme}
+                <img src={lightDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20">
+            {:else}
+                <img src={darkDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20">
+            {/if}
+        </div>
+      {/if}
 		</div>
 	</div>
 </section>
 
-
-
-
-<!--  about  -->
-<section>
+<!--  About Us  -->
+<section id="about">
   <div class="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
     <div class="max-w-3xl">
       <h2 class="text-5xl font-bold sm:text-5xl text-gray-800 dark:text-white">
@@ -93,12 +93,13 @@
     </div>
 
     <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
-      <div class="relative h-64 overflow-hidden sm:h-80 lg:h-full">
+      <!---div class="relative h-64 overflow-hidden sm:h-80 lg:h-full">-->
+      <div class={`relative h-64 overflow-hidden sm:h-80 lg:h-full ${$isMenuOpenStore ? 'hidden' : ''}`}>
         <img
           alt="Party"
           src={codeImage}
           draggable="false"
-          class="absolute inset-0 h-full w-full object-cover pointer-events-none"
+          class="absolute inset-0 h-full w-full object-cover pointer-events-none rounded"
         />
       </div>
 
@@ -129,16 +130,9 @@
   </div>
 </section>
 
-
-
-
-
-
-
-
 <!------------------------- What we offer -------------------------->
 
-<section class="flex justify-center bg-white dark:bg-gray-900 mt-40">
+<section id="services" class="flex justify-center bg-white dark:bg-gray-900 mt-40">
   <div class="max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
     <div class="max-w-xl">
       <h2 class="text-5xl font-bold sm:text-5xl text-gray-800 dark:text-white">What we offer</h2>
@@ -152,7 +146,8 @@
         </span>
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">SEO and Digital Marketing</h2>
-          <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">At Coffee Code Studio, we use a data-driven approach to optimize websites for search engines and implement effective digital marketing strategies that drive traffic and increase conversions. </p>
+          <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">We use a data-driven approach to optimize websites for search engines and implement effective digital marketing strategies that drive traffic and increase conversions. </p>
+          <a href="/"><p class="mt-1 text-blue-500">Read more...</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -163,7 +158,8 @@
         </span>
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">Web Design and Development</h2>
-          <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">At Coffee Code Studio, we provide customized web design and development solutions tailored to our clients' unique needs and preferences. Our team of skilled professionals combines creativity, innovation, and expertise to deliver exceptional results. </p>
+          <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">We provide customized web design and development solutions tailored to our clients' unique needs and preferences. Our team of skilled professionals combines creativity, innovation, and expertise to deliver exceptional results. </p>
+          <a href="/"><p class="mt-1 text-blue-500">Read more...</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -174,7 +170,8 @@
         </span>
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">Mobile Apps</h2>
-          <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">At Coffee Code Studio, we develop mobile apps using the latest technologies and frameworks to deliver high-quality, user-friendly applications that meet our clients' specific requirements. </p>
+          <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">We develop mobile apps using the latest technologies and frameworks to deliver high-quality, user-friendly applications that meet our clients' specific requirements. </p>
+          <a href="/"><p class="mt-1 text-blue-500">Read more...</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -186,8 +183,9 @@
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">Free Hosting</h2>
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">
-            At Coffee Code Studio, we offer hosting from reliable cloud and edge services such as Netlify and Amazon AWS. Your applications will run smoothly and seamlessly across the globe, allowing you to focus on your business goals.
+            We offer hosting from reliable cloud and edge services such as Netlify and Amazon AWS. Your applications will run smoothly and seamlessly across the globe, allowing you to focus on your business goals.
           </p>
+          <a href="/"><p class="mt-1 text-blue-500">Read more...</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -199,8 +197,9 @@
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">Logo Design</h2>
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">
-            At Coffee Code Studio, we create custom logo designs tailored to our clients' needs, using a collaborative approach to ensure that your vision is accurately reflected in the final product.
+            We create custom logo designs tailored to our clients' needs, using a collaborative approach to ensure that your vision is accurately reflected in the final product.
           </p>
+          <a href="/"><p class="mt-1 text-blue-500">Read more...</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -212,8 +211,9 @@
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">Consulting</h2>
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">
-            At Coffee Code Studio, we provide personalized consulting services to help businesses achieve their goals by leveraging our expertise in software development, project management, and technology strategy.
+            We provide personalized consulting services to help businesses achieve their goals by leveraging our expertise in software development, project management, and technology strategy.
           </p>
+          <a href="/"><p class="mt-1 text-blue-500">Read more...</p></a>
         </div>
       </div>
     </div>
@@ -230,7 +230,7 @@
 
       <section class="grid grid-cols-1 gap-8 mt-8 xl:mt-12 lg:grid-cols-2 xl:grid-cols-3">
           <div class="p-8 border rounded-lg dark:border-gray-700">
-              <p class="leading-loose text-lg text-gray-500 dark:text-gray-400">
+              <p class="leading-loose text-lg text-gray-500 dark:text-gray-400 flex gap-0.5">
                   “Working with Coffee Code Studio was a dream come true. 
                   The team listened to my needs and ideas and turned them into a beautiful and functional website that perfectly represents my brand. 
                   The website is not only aesthetically pleasing but also easy to navigate and user-friendly, 
@@ -278,7 +278,7 @@
 
 <!------------------- Get in Touch -------------------->
 
-<section class="bg-white dark:bg-gray-900 mb-40 mt-40">
+<section id="contact" class="bg-white dark:bg-gray-900 mb-40 mt-40">
   <div class="py-8 lg:py-16 px-4 mx-auto max-w-screen-md">
       <h2 class="mb-4 text-5xl font-semibold text-center text-gray-900 dark:text-white">Contact Us</h2>
       <p class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-300 text-xl">Interested in our services? Have a technical question? Reach out to us.</p>

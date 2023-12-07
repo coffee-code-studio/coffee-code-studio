@@ -6,6 +6,9 @@
     import Particles from '$lib/Particles.svelte'
     import Navbar from '$lib/Navbar.svelte'
     import Footer from '$lib/Footer.svelte'
+    import { ScrollWatcher } from 'svelte-scroll-nav'
+
+    // import scrollwatcher
 
     let ipAddress
 
@@ -35,11 +38,17 @@
             background-color: #ffffff;
         }
     }
+
+    :global(body) {
+        scroll-behavior: smooth;
+    }
 </style>
 
 <Particles />
 
 <Navbar />
+
+<ScrollWatcher />
 
 <div class="container justify-center items-center max-w-full">
     <slot />

@@ -45,6 +45,7 @@
 		"request-ip": "^3.3.0",
 		"svelte-media-queries": "^1.5.2",
 		"svelte-particles": "^2.12.0",
+		"svelte-scroll-nav": "^1.0.8",
 		"theme-change": "^2.3.0",
 		"tsparticles": "^2.12.0",
 		"tsparticles-engine": "^2.12.0"
