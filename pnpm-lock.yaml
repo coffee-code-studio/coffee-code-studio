@@ -35,9 +35,6 @@ dependencies:
   svelte-particles:
     specifier: ^2.12.0
     version: 2.12.0(svelte@3.59.2)
-  svelte-scroll-nav:
-    specifier: ^1.0.8
-    version: 1.0.8
   theme-change:
     specifier: ^2.3.0
     version: 2.5.0
@@ -2326,10 +2323,6 @@ packages:
       svelte: 3.59.2
       typescript: 5.1.6
     dev: true
-
-  /svelte-scroll-nav@1.0.8:
-    resolution: {integrity: sha512-ddVNscm7v9iYgbpbeDcNU/WR+fEATSJcqC5WeIMfm02odV+hOcEd2NGq62GgE3FvLCBOKskRGZW/yiqHiK+c2w==}
-    dev: false
 
   /svelte@3.59.2:
     resolution: {integrity: sha512-vzSyuGr3eEoAtT/A6bmajosJZIUWySzY2CzB3w2pgPvnkUjGqlDnsNnA0PMO+mMAhuyMul6C2uuZzY6ELSkzyA==}

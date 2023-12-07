@@ -6,9 +6,6 @@
     import Particles from '$lib/Particles.svelte'
     import Navbar from '$lib/Navbar.svelte'
     import Footer from '$lib/Footer.svelte'
-    import { ScrollWatcher } from 'svelte-scroll-nav'
-
-    // import scrollwatcher
 
     let ipAddress
 
@@ -47,8 +44,6 @@
 <Particles />
 
 <Navbar />
-
-<ScrollWatcher />
 
 <div class="container justify-center items-center max-w-full">
     <slot />
