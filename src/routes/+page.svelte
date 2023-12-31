@@ -5,6 +5,7 @@
   import darkDownArrow from '$lib/assets/dark-down-arrow.png'
   import codeImage from '$lib/assets/code.png'
   import image3D from '../3d.module.css'
+  import { smoothScroll } from '../utils/smoothScroll'
   //
 
   let prefersDarkTheme: any
@@ -64,10 +65,18 @@
         At Coffee Code Studio, our mission is to deliver high quality, afforable, cutting edge web apps, for your business.
       </p>
 			<div class="mt-8 flex flex-wrap justify-center gap-4">
-				<a class="block w-full rounded border border-blue-600 px-12 py-3 text-md font-medium text-gray-900 dark:text-white hover:bg-blue-600 focus:outline-none focus:ring active:bg-blue-500 sm:w-auto" href="/about">
+				<a 
+        class="block w-full rounded border border-blue-600 px-12 py-3 text-md font-medium text-gray-900 dark:text-white hover:bg-blue-600 focus:outline-none focus:ring active:bg-blue-500 sm:w-auto" 
+        href="#about"
+        use:smoothScroll
+        >
           Find out more
         </a>
-        <a class="block w-full rounded border border-blue-600 bg-blue-600 px-12 py-3 text-md font-medium text-white dark:text-white hover:bg-blue-600 focus:outline-none focus:ring active:text-opacity-75 sm:w-auto" href="/contact">
+        <a 
+        class="block w-full rounded border border-blue-600 bg-blue-600 px-12 py-3 text-md font-medium text-white dark:text-white hover:bg-blue-600 focus:outline-none focus:ring active:text-opacity-75 sm:w-auto" 
+        href="#contact"
+        use:smoothScroll
+        >
           Contact us
         </a>
 			</div>
