@@ -1,0 +1,39 @@
+.box {
+    width: 250px; /* Adjust as needed */
+    aspect-ratio: 1; /* Maintains a 1:1 aspect ratio */
+    display: grid;
+    /*outline: 5px solid #111827;*/
+    outline: 5px solid green;
+    transition: .5s;
+    cursor: pointer;
+    overflow: hidden;
+    transform: perspective(400px) rotateY(8deg); /* Initial 3D effect */
+}
+
+width: auto;    /* Let the width be determined by the height */
+height: 110%;   /* Set height slightly larger than 100% */
+object-fit: cover;
+position: absolute; /* Position it absolutely within the .box */
+top: 50%;      /* Align center of the image with the center of the box */
+left: 50%;     /* Same for the horizontal */
+transform: translate(-50%, -50%); /* Offset the image to align properly */
+z-index: -1;
+transition: transform 0.5s;
+
+/*
+.box img {
+    width: 120%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    transition: .5s;
+}
+*/
+
+.box:hover {
+    transform: perspective(400px) rotateY(-8deg); /* Hover effect */
+}
+
+.box:hover img {
+    transform: translate(-16.66%); /* Image shift on hover */
+}

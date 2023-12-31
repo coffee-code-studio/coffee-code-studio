@@ -1,0 +1,10 @@
+.image-3d {
+    transform: perspective(1000px) rotateY(30deg) rotateX(10deg) translateZ(0);
+    transition: transform 0.5s;
+  }
+  
+  .image-3d:hover {
+    transform: perspective(1000px) rotateY(30deg) rotateX(10deg) translateZ(50px); /* Slight pop-out effect on hover */
+  }
+  
+  

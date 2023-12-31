@@ -1,0 +1,7 @@
+.image-3d {
+    transform: perspective(800px) rotateY(45deg) rotateX(20deg) scale(1.1);
+    transform-origin: bottom left; /* Adjust as needed */
+    transition: transform 0.5s ease-in-out;
+}
+  
+  

@@ -1,0 +1,23 @@
+.image-3d {
+    width: 250px;
+    aspect-ratio: 1;
+    display: grid;
+    outline: 5px solid green;
+    transition: .5s;
+    cursor: pointer;
+    overflow: hidden;
+    transform: perspective(400px) rotateY(8deg);
+  }
+  img {
+    width: 120%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    transition: .5s ;
+  }
+  .image-3d:hover {
+    transform: perspective(400px) rotateY(-8deg);
+  }
+  .image-3d:hover img {
+    transform: translate(-16.66%)
+  }

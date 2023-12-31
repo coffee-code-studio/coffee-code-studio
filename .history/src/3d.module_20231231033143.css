@@ -1,0 +1,26 @@
+.box {
+    width: 250px; /* Adjust as needed */
+    aspect-ratio: 1; /* Maintains a 1:1 aspect ratio */
+    display: grid;
+    outline: 5px solid green;    
+    transition: .5s;
+    cursor: pointer;
+    overflow: hidden;
+    transform: perspective(400px) rotateY(8deg); /* Initial 3D effect */
+}
+
+.box img {
+    width: 120%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    transition: .5s;
+}
+
+.box:hover {
+    transform: perspective(400px) rotateY(-8deg); /* Hover effect */
+}
+
+.box:hover img {
+    transform: translate(-16.66%); /* Image shift on hover */
+}
