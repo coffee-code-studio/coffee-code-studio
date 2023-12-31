@@ -99,7 +99,7 @@
           alt="Party"
           src={codeImage}
           draggable="false"
-          class="absolute inset-0 h-full w-full object-cover pointer-events-none"
+          class="absolute inset-0 h-full w-full object-cover pointer-events-none
         />
       </div>
 
