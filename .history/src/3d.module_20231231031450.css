@@ -1,9 +1,0 @@
-.image-3d {
-    transition: transform 1s;
-    transform-origin: center;
-}
-  
-.image-3d:hover {
-    transform: perspective(600px) rotateY(20deg); /* Example effect */
-}
-  
