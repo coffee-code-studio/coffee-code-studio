@@ -9,7 +9,8 @@ const config: UserConfig = {
 	build: {
 		rollupOptions: {
 			external: [
-				'@tsparticles/svelte'
+				'@tsparticles/svelte',
+				'@tsparticles/slim'
 			]
 		},
 		sourcemap: false,
