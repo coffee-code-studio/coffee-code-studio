@@ -5,6 +5,7 @@
   import darkDownArrow from '$lib/assets/dark-down-arrow.png'
   import codeImage from '$lib/assets/code.png'
   import image3D from '../3d.module.css'
+  //
 
   let prefersDarkTheme: any
   let mediaQuery: any
