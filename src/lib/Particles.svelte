@@ -1,4 +1,5 @@
 <script lang="ts">
+    /*
     import { onMount } from 'svelte'
     import { loadSlim } from '@tsparticles/slim'
     import { particlesInit } from '@tsparticles/svelte'
@@ -56,8 +57,10 @@
     void particlesInit(async (engine: Engine) => {
         await loadSlim(engine)
     })
+    */
 </script>
 
+<!---
 <svelte:component
     this="{ParticlesComponent}"
     id="tsparticles"
@@ -67,3 +70,4 @@
     on:particlesLoaded="{onParticlesLoaded}"
     particlesInit="{particlesInit}"
 />
+--->

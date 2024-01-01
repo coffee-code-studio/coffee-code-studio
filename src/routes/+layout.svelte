@@ -3,7 +3,7 @@
     import { onMount } from 'svelte'
     import type { PageData } from './$types'
     import { dataStore } from '$lib/stores'
-    import Particles from '$lib/Particles.svelte'
+    // import Particles from '$lib/Particles.svelte'
     import Navbar from '$lib/Navbar.svelte'
     import Footer from '$lib/Footer.svelte'
     import Background from '$lib/Background.svelte'
