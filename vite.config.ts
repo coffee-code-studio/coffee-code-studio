@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite'
 import type { UserConfig } from 'vite'
+import path from 'path'
 
 const config: UserConfig = {
 	plugins: [sveltekit()],
@@ -16,6 +17,11 @@ const config: UserConfig = {
 		},
 		*/
 		sourcemap: false,
+	},
+	resolve: {
+		alias: {
+			'@tsparticles/slim': path.resolve(__dirname, 'node_modules/@tsparticles/slim'),
+		}
 	},
 	ssr: {
 		noExternal: ["tsparticles", "@tsparticles/slim", "@tsparticles/engine", "@tsparticles/svelte"],
