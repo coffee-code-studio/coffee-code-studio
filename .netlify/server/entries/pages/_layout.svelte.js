@@ -1,4 +1,5 @@
 import { c as create_ssr_component, v as validate_component, m as missing_component, a as add_attribute, e as escape } from "../../chunks/index2.js";
+import { w as writable } from "../../chunks/index.js";
 const app = "";
 const generatedAttribute = "generated";
 const mouseDownEvent = "pointerdown";
@@ -174,13 +175,6 @@ function setRangeValue(source, value) {
     max: Math.max(max, value)
   } : setRangeValue(min, max);
 }
-function getValue(options) {
-  const random = options.random, { enable, minimumValue } = isBoolean(random) ? {
-    enable: random,
-    minimumValue: 0
-  } : random;
-  return enable ? getRangeValue(setRangeValue(options.value, minimumValue)) : getRangeValue(options.value);
-}
 function getDistances(pointA, pointB) {
   const dx = pointA.x - pointB.x, dy = pointA.y - pointB.y;
   return { dx, dy, distance: Math.sqrt(dx ** 2 + dy ** 2) };
@@ -194,21 +188,21 @@ function getParticleDirectionAngle(direction, position, center) {
   }
   switch (direction) {
     case "top":
-      return -Math.PI / 2;
+      return -Math.PI * 0.5;
     case "top-right":
-      return -Math.PI / 4;
+      return -Math.PI * 0.25;
     case "right":
       return 0;
     case "bottom-right":
-      return Math.PI / 4;
+      return Math.PI * 0.25;
     case "bottom":
-      return Math.PI / 2;
+      return Math.PI * 0.5;
     case "bottom-left":
-      return 3 * Math.PI / 4;
+      return Math.PI * 0.75;
     case "left":
       return Math.PI;
     case "top-left":
-      return -3 * Math.PI / 4;
+      return -Math.PI * 0.75;
     case "inside":
       return Math.atan2(center.y - position.y, center.x - position.x);
     case "outside":
@@ -225,19 +219,6 @@ function getParticleBaseVelocity(direction) {
 }
 function collisionVelocity(v1, v2, m1, m2) {
   return Vector.create(v1.x * (m1 - m2) / (m1 + m2) + v2.x * 2 * m2 / (m1 + m2), v1.y);
-}
-function calcPositionOrRandomFromSize(data) {
-  return {
-    x: (data.position?.x ?? getRandom() * 100) * data.size.width / 100,
-    y: (data.position?.y ?? getRandom() * 100) * data.size.height / 100
-  };
-}
-function calcPositionOrRandomFromSizeRanged(data) {
-  const position = {
-    x: data.position?.x !== void 0 ? getRangeValue(data.position.x) : void 0,
-    y: data.position?.y !== void 0 ? getRangeValue(data.position.y) : void 0
-  };
-  return calcPositionOrRandomFromSize({ size: data.size, position });
 }
 function calcExactPositionOrRandomFromSize(data) {
   return {
@@ -264,7 +245,7 @@ function rectSideBounce(data) {
   if (pOtherSide.min < rectOtherSide.min || pOtherSide.min > rectOtherSide.max || pOtherSide.max < rectOtherSide.min || pOtherSide.max > rectOtherSide.max) {
     return res;
   }
-  if (pSide.max >= rectSide.min && pSide.max <= (rectSide.max + rectSide.min) / 2 && velocity > 0 || pSide.min <= rectSide.max && pSide.min > (rectSide.max + rectSide.min) / 2 && velocity < 0) {
+  if (pSide.max >= rectSide.min && pSide.max <= (rectSide.max + rectSide.min) * 0.5 && velocity > 0 || pSide.min <= rectSide.max && pSide.min > (rectSide.max + rectSide.min) * 0.5 && velocity < 0) {
     res.velocity = velocity * -factor;
     res.bounced = true;
   }
@@ -287,6 +268,12 @@ function safeMatchMedia(query) {
     return;
   }
   return matchMedia(query);
+}
+function safeIntersectionObserver(callback) {
+  if (isSsr() || typeof IntersectionObserver === "undefined") {
+    return;
+  }
+  return new IntersectionObserver(callback);
 }
 function safeMutationObserver(callback) {
   if (isSsr() || typeof MutationObserver === "undefined") {
@@ -392,7 +379,7 @@ function circleBounceDataFromParticle(p) {
     radius: p.getRadius(),
     mass: p.getMass(),
     velocity: p.velocity,
-    factor: Vector.create(getValue(p.options.bounce.horizontal), getValue(p.options.bounce.vertical))
+    factor: Vector.create(getRangeValue(p.options.bounce.horizontal.value), getRangeValue(p.options.bounce.vertical.value))
   };
 }
 function circleBounce(p1, p2) {
@@ -407,7 +394,7 @@ function circleBounce(p1, p2) {
   p2.velocity.y = vFinal2.y * p2.factor.y;
 }
 function rectBounce(particle, divBounds) {
-  const pPos = particle.getPosition(), size = particle.getRadius(), bounds = calculateBounds(pPos, size), resH = rectSideBounce({
+  const pPos = particle.getPosition(), size = particle.getRadius(), bounds = calculateBounds(pPos, size), bounceOptions = particle.options.bounce, resH = rectSideBounce({
     pSide: {
       min: bounds.left,
       max: bounds.right
@@ -425,7 +412,7 @@ function rectBounce(particle, divBounds) {
       max: divBounds.bottom
     },
     velocity: particle.velocity.x,
-    factor: getValue(particle.options.bounce.horizontal)
+    factor: getRangeValue(bounceOptions.horizontal.value)
   });
   if (resH.bounced) {
     if (resH.velocity !== void 0) {
@@ -453,7 +440,7 @@ function rectBounce(particle, divBounds) {
       max: divBounds.right
     },
     velocity: particle.velocity.y,
-    factor: getValue(particle.options.bounce.vertical)
+    factor: getRangeValue(bounceOptions.vertical.value)
   });
   if (resV.bounced) {
     if (resV.velocity !== void 0) {
@@ -545,9 +532,6 @@ function getPositionOrSize(positionOrSize, canvasSize) {
 function getPosition(position, canvasSize) {
   return getPositionOrSize(position, canvasSize);
 }
-function getSize(size, canvasSize) {
-  return getPositionOrSize(size, canvasSize);
-}
 function isBoolean(arg) {
   return typeof arg === "boolean";
 }
@@ -556,9 +540,6 @@ function isString(arg) {
 }
 function isNumber(arg) {
   return typeof arg === "number";
-}
-function isFunction(arg) {
-  return typeof arg === "function";
 }
 function isObject(arg) {
   return typeof arg === "object" && arg !== null;
@@ -569,24 +550,6 @@ function isArray(arg) {
 const randomColorValue = "random", midColorValue = "mid", colorManagers = /* @__PURE__ */ new Map();
 function addColorManager(manager) {
   colorManagers.set(manager.key, manager);
-}
-function hue2rgb(p, q, t) {
-  if (t < 0) {
-    t += 1;
-  }
-  if (t > 1) {
-    t -= 1;
-  }
-  if (t < 1 / 6) {
-    return p + (q - p) * 6 * t;
-  }
-  if (t < 1 / 2) {
-    return q;
-  }
-  if (t < 2 / 3) {
-    return p + (q - p) * (2 / 3 - t) * 6;
-  }
-  return p;
 }
 function stringToRgba(input) {
   for (const [, manager] of colorManagers) {
@@ -651,7 +614,7 @@ function rangeColorToHsl(color, index, useIndex = true) {
 function rgbToHsl(color) {
   const r1 = color.r / 255, g1 = color.g / 255, b1 = color.b / 255, max = Math.max(r1, g1, b1), min = Math.min(r1, g1, b1), res = {
     h: 0,
-    l: (max + min) / 2,
+    l: (max + min) * 0.5,
     s: 0
   };
   if (max !== min) {
@@ -673,23 +636,30 @@ function stringToRgb(input) {
   return stringToRgba(input);
 }
 function hslToRgb(hsl) {
-  const result = { b: 0, g: 0, r: 0 }, hslPercent = {
-    h: hsl.h / 360,
-    l: hsl.l / 100,
-    s: hsl.s / 100
-  };
-  if (!hslPercent.s) {
-    result.r = result.g = result.b = hslPercent.l;
-  } else {
-    const q = hslPercent.l < 0.5 ? hslPercent.l * (1 + hslPercent.s) : hslPercent.l + hslPercent.s - hslPercent.l * hslPercent.s, p = 2 * hslPercent.l - q;
-    result.r = hue2rgb(p, q, hslPercent.h + 1 / 3);
-    result.g = hue2rgb(p, q, hslPercent.h);
-    result.b = hue2rgb(p, q, hslPercent.h - 1 / 3);
+  const h = (hsl.h % 360 + 360) % 360, s = Math.max(0, Math.min(100, hsl.s)), l = Math.max(0, Math.min(100, hsl.l)), hNormalized = h / 360, sNormalized = s / 100, lNormalized = l / 100;
+  if (s === 0) {
+    const grayscaleValue = Math.round(lNormalized * 255);
+    return { r: grayscaleValue, g: grayscaleValue, b: grayscaleValue };
   }
-  result.r = Math.floor(result.r * 255);
-  result.g = Math.floor(result.g * 255);
-  result.b = Math.floor(result.b * 255);
-  return result;
+  const channel = (temp12, temp22, temp3) => {
+    if (temp3 < 0) {
+      temp3 += 1;
+    }
+    if (temp3 > 1) {
+      temp3 -= 1;
+    }
+    if (temp3 * 6 < 1) {
+      return temp12 + (temp22 - temp12) * 6 * temp3;
+    }
+    if (temp3 * 2 < 1) {
+      return temp22;
+    }
+    if (temp3 * 3 < 2) {
+      return temp12 + (temp22 - temp12) * (2 / 3 - temp3) * 6;
+    }
+    return temp12;
+  }, temp1 = lNormalized < 0.5 ? lNormalized * (1 + sNormalized) : lNormalized + sNormalized - lNormalized * sNormalized, temp2 = 2 * lNormalized - temp1, red = Math.min(255, 255 * channel(temp2, temp1, hNormalized + 1 / 3)), green = Math.min(255, 255 * channel(temp2, temp1, hNormalized)), blue = Math.min(255, 255 * channel(temp2, temp1, hNormalized - 1 / 3));
+  return { r: Math.round(red), g: Math.round(green), b: Math.round(blue) };
 }
 function hslaToRgba(hsla) {
   const rgbResult = hslToRgb(hsla);
@@ -819,13 +789,6 @@ function drawLine(context, begin, end) {
   context.lineTo(end.x, end.y);
   context.closePath();
 }
-function drawTriangle(context, p1, p2, p3) {
-  context.beginPath();
-  context.moveTo(p1.x, p1.y);
-  context.lineTo(p2.x, p2.y);
-  context.lineTo(p3.x, p3.y);
-  context.closePath();
-}
 function paintBase(context, dimension, baseColor) {
   context.fillStyle = baseColor ?? "rgba(0,0,0,0)";
   context.fillRect(0, 0, dimension.width, dimension.height);
@@ -853,7 +816,6 @@ function drawParticle(data) {
     d: rotateData.cos * (transform.d ?? 1)
   };
   context.setTransform(transformData.a, transformData.b, transformData.c, transformData.d, pos.x, pos.y);
-  context.beginPath();
   if (backgroundMask) {
     context.globalCompositeOperation = composite;
   }
@@ -872,39 +834,79 @@ function drawParticle(data) {
   if (colorStyles.stroke) {
     context.strokeStyle = colorStyles.stroke;
   }
-  drawShape(container, context, particle, radius, opacity, delta);
+  const drawData = { container, context, particle, radius, opacity, delta, transformData };
+  context.beginPath();
+  drawShape(drawData);
+  if (particle.shapeClose) {
+    context.closePath();
+  }
   if (strokeWidth > 0) {
     context.stroke();
   }
-  if (particle.close) {
-    context.closePath();
-  }
-  if (particle.fill) {
+  if (particle.shapeFill) {
     context.fill();
   }
-  drawShapeAfterEffect(container, context, particle, radius, opacity, delta);
+  drawShapeAfterDraw(drawData);
+  drawEffect(drawData);
   context.globalCompositeOperation = "source-over";
   context.setTransform(1, 0, 0, 1, 0, 0);
 }
-function drawShape(container, context, particle, radius, opacity, delta) {
-  if (!particle.shape) {
+function drawEffect(data) {
+  const { container, context, particle, radius, opacity, delta, transformData } = data;
+  if (!particle.effect) {
     return;
   }
-  const drawer = container.drawers.get(particle.shape);
+  const drawer = container.effectDrawers.get(particle.effect);
   if (!drawer) {
     return;
   }
-  drawer.draw(context, particle, radius, opacity, delta, container.retina.pixelRatio);
+  drawer.draw({
+    context,
+    particle,
+    radius,
+    opacity,
+    delta,
+    pixelRatio: container.retina.pixelRatio,
+    transformData: { ...transformData }
+  });
 }
-function drawShapeAfterEffect(container, context, particle, radius, opacity, delta) {
+function drawShape(data) {
+  const { container, context, particle, radius, opacity, delta, transformData } = data;
   if (!particle.shape) {
     return;
   }
-  const drawer = container.drawers.get(particle.shape);
-  if (!drawer || !drawer.afterEffect) {
+  const drawer = container.shapeDrawers.get(particle.shape);
+  if (!drawer) {
     return;
   }
-  drawer.afterEffect(context, particle, radius, opacity, delta, container.retina.pixelRatio);
+  drawer.draw({
+    context,
+    particle,
+    radius,
+    opacity,
+    delta,
+    pixelRatio: container.retina.pixelRatio,
+    transformData: { ...transformData }
+  });
+}
+function drawShapeAfterDraw(data) {
+  const { container, context, particle, radius, opacity, delta, transformData } = data;
+  if (!particle.shape) {
+    return;
+  }
+  const drawer = container.shapeDrawers.get(particle.shape);
+  if (!drawer || !drawer.afterDraw) {
+    return;
+  }
+  drawer.afterDraw({
+    context,
+    particle,
+    radius,
+    opacity,
+    delta,
+    pixelRatio: container.retina.pixelRatio,
+    transformData: { ...transformData }
+  });
 }
 function drawPlugin(context, plugin, delta) {
   if (!plugin.draw) {
@@ -1120,7 +1122,7 @@ class Canvas {
       } else if (trailFill.image) {
         this._paintImage(trailFill.image, trailFill.opacity);
       }
-    } else {
+    } else if (options.clear) {
       this.draw((ctx) => {
         clear(ctx, this.size);
       });
@@ -1310,10 +1312,10 @@ class Canvas {
     this.element.width = size.width = this.element.offsetWidth * pxRatio;
     this.element.height = size.height = this.element.offsetHeight * pxRatio;
     if (this.container.started) {
-      this.resizeFactor = {
+      container.particles.setResizeFactor({
         width: size.width / oldSize.width,
         height: size.height / oldSize.height
-      };
+      });
     }
     return true;
   }
@@ -1661,7 +1663,7 @@ class OptionsColor {
     this.value = data.value;
   }
 }
-class Background {
+let Background$1 = class Background {
   constructor() {
     this.color = new OptionsColor();
     this.color.value = "";
@@ -1694,7 +1696,7 @@ class Background {
       this.opacity = data.opacity;
     }
   }
-}
+};
 class BackgroundMaskCover {
   constructor() {
     this.color = new OptionsColor();
@@ -1727,8 +1729,7 @@ class BackgroundMask {
       this.composite = data.composite;
     }
     if (data.cover !== void 0) {
-      const cover = data.cover;
-      const color = isString(data.cover) ? { color: data.cover } : data.cover;
+      const cover = data.cover, color = isString(data.cover) ? { color: data.cover } : data.cover;
       this.cover.load(cover.color !== void 0 ? cover : { color });
     }
     if (data.enable !== void 0) {
@@ -1777,31 +1778,9 @@ class DivEvent {
     this.mode = [];
     this.type = "circle";
   }
-  get el() {
-    return this.elementId;
-  }
-  set el(value) {
-    this.elementId = value;
-  }
-  get elementId() {
-    return this.ids;
-  }
-  set elementId(value) {
-    this.ids = value;
-  }
-  get ids() {
-    return executeOnSingleOrMultiple(this.selectors, (t) => t.replace("#", ""));
-  }
-  set ids(value) {
-    this.selectors = executeOnSingleOrMultiple(value, (t) => `#${t}`);
-  }
   load(data) {
     if (!data) {
       return;
-    }
-    const ids = data.ids ?? data.elementId ?? data.el;
-    if (ids !== void 0) {
-      this.ids = ids;
     }
     if (data.selectors !== void 0) {
       this.selectors = data.selectors;
@@ -1881,30 +1860,12 @@ class Events {
     this.onHover = new HoverEvent();
     this.resize = new ResizeEvent();
   }
-  get onclick() {
-    return this.onClick;
-  }
-  set onclick(value) {
-    this.onClick = value;
-  }
-  get ondiv() {
-    return this.onDiv;
-  }
-  set ondiv(value) {
-    this.onDiv = value;
-  }
-  get onhover() {
-    return this.onHover;
-  }
-  set onhover(value) {
-    this.onHover = value;
-  }
   load(data) {
     if (!data) {
       return;
     }
-    this.onClick.load(data.onClick ?? data.onclick);
-    const onDiv = data.onDiv ?? data.ondiv;
+    this.onClick.load(data.onClick);
+    const onDiv = data.onDiv;
     if (onDiv !== void 0) {
       this.onDiv = executeOnSingleOrMultiple(onDiv, (t) => {
         const tmp = new DivEvent();
@@ -1912,12 +1873,8 @@ class Events {
         return tmp;
       });
     }
-    this.onHover.load(data.onHover ?? data.onhover);
-    if (isBoolean(data.resize)) {
-      this.resize.enable = data.resize;
-    } else {
-      this.resize.load(data.resize);
-    }
+    this.onHover.load(data.onHover);
+    this.resize.load(data.resize);
   }
 }
 class Modes {
@@ -1932,7 +1889,7 @@ class Modes {
     if (!this._container) {
       return;
     }
-    const interactors = this._engine.plugins.interactors.get(this._container);
+    const interactors = this._engine.interactors.get(this._container);
     if (!interactors) {
       return;
     }
@@ -1950,17 +1907,11 @@ class Interactivity {
     this.events = new Events();
     this.modes = new Modes(engine, container);
   }
-  get detect_on() {
-    return this.detectsOn;
-  }
-  set detect_on(value) {
-    this.detectsOn = value;
-  }
   load(data) {
     if (!data) {
       return;
     }
-    const detectsOn = data.detectsOn ?? data.detect_on;
+    const detectsOn = data.detectsOn;
     if (detectsOn !== void 0) {
       this.detectsOn = detectsOn;
     }
@@ -2049,15 +2000,14 @@ class Theme {
     }
   }
 }
-class ColorAnimation {
+class AnimationOptions {
   constructor() {
     this.count = 0;
     this.enable = false;
-    this.offset = 0;
     this.speed = 1;
-    this.delay = 0;
     this.decay = 0;
-    this.sync = true;
+    this.delay = 0;
+    this.sync = false;
   }
   load(data) {
     if (!data) {
@@ -2068,9 +2018,6 @@ class ColorAnimation {
     }
     if (data.enable !== void 0) {
       this.enable = data.enable;
-    }
-    if (data.offset !== void 0) {
-      this.offset = setRangeValue(data.offset);
     }
     if (data.speed !== void 0) {
       this.speed = setRangeValue(data.speed);
@@ -2083,6 +2030,41 @@ class ColorAnimation {
     }
     if (data.sync !== void 0) {
       this.sync = data.sync;
+    }
+  }
+}
+class RangedAnimationOptions extends AnimationOptions {
+  constructor() {
+    super();
+    this.mode = "auto";
+    this.startValue = "random";
+  }
+  load(data) {
+    super.load(data);
+    if (!data) {
+      return;
+    }
+    if (data.mode !== void 0) {
+      this.mode = data.mode;
+    }
+    if (data.startValue !== void 0) {
+      this.startValue = data.startValue;
+    }
+  }
+}
+class ColorAnimation extends AnimationOptions {
+  constructor() {
+    super();
+    this.offset = 0;
+    this.sync = true;
+  }
+  load(data) {
+    super.load(data);
+    if (!data) {
+      return;
+    }
+    if (data.offset !== void 0) {
+      this.offset = setRangeValue(data.offset);
     }
   }
 }
@@ -2163,101 +2145,47 @@ class CollisionsOverlap {
     }
   }
 }
-class AnimationOptions {
-  constructor() {
-    this.count = 0;
-    this.enable = false;
-    this.speed = 1;
-    this.decay = 0;
-    this.delay = 0;
-    this.sync = false;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.count !== void 0) {
-      this.count = setRangeValue(data.count);
-    }
-    if (data.enable !== void 0) {
-      this.enable = data.enable;
-    }
-    if (data.speed !== void 0) {
-      this.speed = setRangeValue(data.speed);
-    }
-    if (data.decay !== void 0) {
-      this.decay = setRangeValue(data.decay);
-    }
-    if (data.delay !== void 0) {
-      this.delay = setRangeValue(data.delay);
-    }
-    if (data.sync !== void 0) {
-      this.sync = data.sync;
-    }
-  }
-}
-class RangedAnimationOptions extends AnimationOptions {
-  constructor() {
-    super();
-    this.mode = "auto";
-    this.startValue = "random";
-  }
-  load(data) {
-    super.load(data);
-    if (!data) {
-      return;
-    }
-    if (data.minimumValue !== void 0) {
-      this.minimumValue = data.minimumValue;
-    }
-    if (data.mode !== void 0) {
-      this.mode = data.mode;
-    }
-    if (data.startValue !== void 0) {
-      this.startValue = data.startValue;
-    }
-  }
-}
-class Random {
-  constructor() {
-    this.enable = false;
-    this.minimumValue = 0;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.enable !== void 0) {
-      this.enable = data.enable;
-    }
-    if (data.minimumValue !== void 0) {
-      this.minimumValue = data.minimumValue;
-    }
-  }
-}
 class ValueWithRandom {
   constructor() {
-    this.random = new Random();
     this.value = 0;
   }
   load(data) {
     if (!data) {
       return;
     }
-    if (isBoolean(data.random)) {
-      this.random.enable = data.random;
-    } else {
-      this.random.load(data.random);
-    }
     if (data.value !== void 0) {
-      this.value = setRangeValue(data.value, this.random.enable ? this.random.minimumValue : void 0);
+      this.value = setRangeValue(data.value);
     }
+  }
+}
+class AnimationValueWithRandom extends ValueWithRandom {
+  constructor() {
+    super();
+    this.animation = new AnimationOptions();
+  }
+  load(data) {
+    super.load(data);
+    if (!data) {
+      return;
+    }
+    const animation = data.animation;
+    if (animation !== void 0) {
+      this.animation.load(animation);
+    }
+  }
+}
+class RangedAnimationValueWithRandom extends AnimationValueWithRandom {
+  constructor() {
+    super();
+    this.animation = new RangedAnimationOptions();
+  }
+  load(data) {
+    super.load(data);
   }
 }
 class ParticlesBounceFactor extends ValueWithRandom {
   constructor() {
     super();
-    this.random.minimumValue = 0.1;
     this.value = 1;
   }
 }
@@ -2301,6 +2229,37 @@ class Collisions {
     this.overlap.load(data.overlap);
   }
 }
+class Effect {
+  constructor() {
+    this.close = true;
+    this.fill = true;
+    this.options = {};
+    this.type = [];
+  }
+  load(data) {
+    if (!data) {
+      return;
+    }
+    const options = data.options;
+    if (options !== void 0) {
+      for (const effect in options) {
+        const item = options[effect];
+        if (item) {
+          this.options[effect] = deepExtend(this.options[effect] ?? {}, item);
+        }
+      }
+    }
+    if (data.close !== void 0) {
+      this.close = data.close;
+    }
+    if (data.fill !== void 0) {
+      this.fill = data.fill;
+    }
+    if (data.type !== void 0) {
+      this.type = data.type;
+    }
+  }
+}
 class MoveAngle {
   constructor() {
     this.offset = 0;
@@ -2327,18 +2286,6 @@ class MoveAttract {
       y: 3e3
     };
   }
-  get rotateX() {
-    return this.rotate.x;
-  }
-  set rotateX(value) {
-    this.rotate.x = value;
-  }
-  get rotateY() {
-    return this.rotate.y;
-  }
-  set rotateY(value) {
-    this.rotate.y = value;
-  }
   load(data) {
     if (!data) {
       return;
@@ -2349,13 +2296,15 @@ class MoveAttract {
     if (data.enable !== void 0) {
       this.enable = data.enable;
     }
-    const rotateX = data.rotate?.x ?? data.rotateX;
-    if (rotateX !== void 0) {
-      this.rotate.x = rotateX;
-    }
-    const rotateY = data.rotate?.y ?? data.rotateY;
-    if (rotateY !== void 0) {
-      this.rotate.y = rotateY;
+    if (data.rotate) {
+      const rotateX = data.rotate.x;
+      if (rotateX !== void 0) {
+        this.rotate.x = rotateX;
+      }
+      const rotateY = data.rotate.y;
+      if (rotateY !== void 0) {
+        this.rotate.y = rotateY;
+      }
     }
   }
 }
@@ -2452,12 +2401,6 @@ class MoveTrail {
     this.length = 10;
     this.fill = new MoveTrailFill();
   }
-  get fillColor() {
-    return this.fill.color;
-  }
-  set fillColor(value) {
-    this.fill.load({ color: value });
-  }
   load(data) {
     if (!data) {
       return;
@@ -2465,8 +2408,8 @@ class MoveTrail {
     if (data.enable !== void 0) {
       this.enable = data.enable;
     }
-    if (data.fill !== void 0 || data.fillColor !== void 0) {
-      this.fill.load(data.fill || { color: data.fillColor });
+    if (data.fill !== void 0) {
+      this.fill.load(data.fill);
     }
     if (data.length !== void 0) {
       this.length = data.length;
@@ -2532,35 +2475,6 @@ class Move {
     this.vibrate = false;
     this.warp = false;
   }
-  get bounce() {
-    return this.collisions;
-  }
-  set bounce(value) {
-    this.collisions = value;
-  }
-  get collisions() {
-    return false;
-  }
-  set collisions(_) {
-  }
-  get noise() {
-    return this.path;
-  }
-  set noise(value) {
-    this.path = value;
-  }
-  get outMode() {
-    return this.outModes.default;
-  }
-  set outMode(value) {
-    this.outModes.default = value;
-  }
-  get out_mode() {
-    return this.outMode;
-  }
-  set out_mode(value) {
-    this.outMode = value;
-  }
   load(data) {
     if (!data) {
       return;
@@ -2587,7 +2501,7 @@ class Move {
       this.enable = data.enable;
     }
     this.gravity.load(data.gravity);
-    const outModes = data.outModes ?? data.outMode ?? data.out_mode;
+    const outModes = data.outModes;
     if (outModes !== void 0) {
       if (isObject(outModes)) {
         this.outModes.load(outModes);
@@ -2597,7 +2511,7 @@ class Move {
         });
       }
     }
-    this.path.load(data.path ?? data.noise);
+    this.path.load(data.path);
     if (data.random !== void 0) {
       this.random = data.random;
     }
@@ -2626,16 +2540,7 @@ class OpacityAnimation extends RangedAnimationOptions {
     this.destroy = "none";
     this.speed = 2;
   }
-  get opacity_min() {
-    return this.minimumValue;
-  }
-  set opacity_min(value) {
-    this.minimumValue = value;
-  }
   load(data) {
-    if (data?.opacity_min !== void 0 && data.minimumValue === void 0) {
-      data.minimumValue = data.opacity_min;
-    }
     super.load(data);
     if (!data) {
       return;
@@ -2645,28 +2550,20 @@ class OpacityAnimation extends RangedAnimationOptions {
     }
   }
 }
-class Opacity extends ValueWithRandom {
+class Opacity extends RangedAnimationValueWithRandom {
   constructor() {
     super();
     this.animation = new OpacityAnimation();
-    this.random.minimumValue = 0.1;
     this.value = 1;
-  }
-  get anim() {
-    return this.animation;
-  }
-  set anim(value) {
-    this.animation = value;
   }
   load(data) {
     if (!data) {
       return;
     }
     super.load(data);
-    const animation = data.animation ?? data.anim;
+    const animation = data.animation;
     if (animation !== void 0) {
       this.animation.load(animation);
-      this.value = setRangeValue(this.value, this.animation.enable ? this.animation.minimumValue : void 0);
     }
   }
 }
@@ -2676,24 +2573,6 @@ class ParticlesDensity {
     this.width = 1920;
     this.height = 1080;
   }
-  get area() {
-    return this.width;
-  }
-  set area(value) {
-    this.width = value;
-  }
-  get factor() {
-    return this.height;
-  }
-  set factor(value) {
-    this.height = value;
-  }
-  get value_area() {
-    return this.area;
-  }
-  set value_area(value) {
-    this.area = value;
-  }
   load(data) {
     if (!data) {
       return;
@@ -2701,37 +2580,45 @@ class ParticlesDensity {
     if (data.enable !== void 0) {
       this.enable = data.enable;
     }
-    const width = data.width ?? data.area ?? data.value_area;
+    const width = data.width;
     if (width !== void 0) {
       this.width = width;
     }
-    const height = data.height ?? data.factor;
+    const height = data.height;
     if (height !== void 0) {
       this.height = height;
+    }
+  }
+}
+class ParticlesNumberLimit {
+  constructor() {
+    this.mode = "delete";
+    this.value = 0;
+  }
+  load(data) {
+    if (!data) {
+      return;
+    }
+    if (data.mode !== void 0) {
+      this.mode = data.mode;
+    }
+    if (data.value !== void 0) {
+      this.value = data.value;
     }
   }
 }
 class ParticlesNumber {
   constructor() {
     this.density = new ParticlesDensity();
-    this.limit = 0;
+    this.limit = new ParticlesNumberLimit();
     this.value = 0;
-  }
-  get max() {
-    return this.limit;
-  }
-  set max(value) {
-    this.limit = value;
   }
   load(data) {
     if (!data) {
       return;
     }
     this.density.load(data.density);
-    const limit = data.limit ?? data.max;
-    if (limit !== void 0) {
-      this.limit = limit;
-    }
+    this.limit.load(data.limit);
     if (data.value !== void 0) {
       this.value = data.value;
     }
@@ -2770,70 +2657,18 @@ class Shadow {
     }
   }
 }
-const charKey = "character", charAltKey = "char", imageKey = "image", imageAltKey = "images", polygonKey = "polygon", polygonAltKey = "star";
 class Shape {
   constructor() {
-    this.loadShape = (item, mainKey, altKey, altOverride) => {
-      if (!item) {
-        return;
-      }
-      const itemIsArray = isArray(item), emptyValue = itemIsArray ? [] : {}, mainDifferentValues = itemIsArray !== isArray(this.options[mainKey]), altDifferentValues = itemIsArray !== isArray(this.options[altKey]);
-      if (mainDifferentValues) {
-        this.options[mainKey] = emptyValue;
-      }
-      if (altDifferentValues && altOverride) {
-        this.options[altKey] = emptyValue;
-      }
-      this.options[mainKey] = deepExtend(this.options[mainKey] ?? emptyValue, item);
-      if (!this.options[altKey] || altOverride) {
-        this.options[altKey] = deepExtend(this.options[altKey] ?? emptyValue, item);
-      }
-    };
     this.close = true;
     this.fill = true;
     this.options = {};
     this.type = "circle";
   }
-  get character() {
-    return this.options[charKey] ?? this.options[charAltKey];
-  }
-  set character(value) {
-    this.options[charAltKey] = this.options[charKey] = value;
-  }
-  get custom() {
-    return this.options;
-  }
-  set custom(value) {
-    this.options = value;
-  }
-  get image() {
-    return this.options[imageKey] ?? this.options[imageAltKey];
-  }
-  set image(value) {
-    this.options[imageAltKey] = this.options[imageKey] = value;
-  }
-  get images() {
-    return this.image;
-  }
-  set images(value) {
-    this.image = value;
-  }
-  get polygon() {
-    return this.options[polygonKey] ?? this.options[polygonAltKey];
-  }
-  set polygon(value) {
-    this.options[polygonAltKey] = this.options[polygonKey] = value;
-  }
-  get stroke() {
-    return [];
-  }
-  set stroke(_value) {
-  }
   load(data) {
     if (!data) {
       return;
     }
-    const options = data.options ?? data.custom;
+    const options = data.options;
     if (options !== void 0) {
       for (const shape in options) {
         const item = options[shape];
@@ -2842,9 +2677,6 @@ class Shape {
         }
       }
     }
-    this.loadShape(data.character, charKey, charAltKey, true);
-    this.loadShape(data.polygon, polygonKey, polygonAltKey, false);
-    this.loadShape(data.image ?? data.images, imageKey, imageAltKey, true);
     if (data.close !== void 0) {
       this.close = data.close;
     }
@@ -2862,16 +2694,7 @@ class SizeAnimation extends RangedAnimationOptions {
     this.destroy = "none";
     this.speed = 5;
   }
-  get size_min() {
-    return this.minimumValue;
-  }
-  set size_min(value) {
-    this.minimumValue = value;
-  }
   load(data) {
-    if (data?.size_min !== void 0 && data.minimumValue === void 0) {
-      data.minimumValue = data.size_min;
-    }
     super.load(data);
     if (!data) {
       return;
@@ -2881,28 +2704,20 @@ class SizeAnimation extends RangedAnimationOptions {
     }
   }
 }
-class Size extends ValueWithRandom {
+class Size extends RangedAnimationValueWithRandom {
   constructor() {
     super();
     this.animation = new SizeAnimation();
-    this.random.minimumValue = 1;
     this.value = 3;
-  }
-  get anim() {
-    return this.animation;
-  }
-  set anim(value) {
-    this.animation = value;
   }
   load(data) {
     super.load(data);
     if (!data) {
       return;
     }
-    const animation = data.animation ?? data.anim;
+    const animation = data.animation;
     if (animation !== void 0) {
       this.animation.load(animation);
-      this.value = setRangeValue(this.value, this.animation.enable ? this.animation.minimumValue : void 0);
     }
   }
 }
@@ -2956,6 +2771,7 @@ class ParticlesOptions {
     this.collisions = new Collisions();
     this.color = new AnimatableColor();
     this.color.value = "#fff";
+    this.effect = new Effect();
     this.groups = {};
     this.move = new Move();
     this.number = new ParticlesNumber();
@@ -2971,35 +2787,35 @@ class ParticlesOptions {
     if (!data) {
       return;
     }
-    this.bounce.load(data.bounce);
-    this.color.load(AnimatableColor.create(this.color, data.color));
     if (data.groups !== void 0) {
-      for (const group in data.groups) {
+      for (const group of Object.keys(data.groups)) {
+        if (!Object.hasOwn(data.groups, group)) {
+          continue;
+        }
         const item = data.groups[group];
         if (item !== void 0) {
           this.groups[group] = deepExtend(this.groups[group] ?? {}, item);
         }
       }
     }
-    this.move.load(data.move);
-    this.number.load(data.number);
-    this.opacity.load(data.opacity);
     if (data.reduceDuplicates !== void 0) {
       this.reduceDuplicates = data.reduceDuplicates;
     }
+    this.bounce.load(data.bounce);
+    this.color.load(AnimatableColor.create(this.color, data.color));
+    this.effect.load(data.effect);
+    this.move.load(data.move);
+    this.number.load(data.number);
+    this.opacity.load(data.opacity);
     this.shape.load(data.shape);
     this.size.load(data.size);
     this.shadow.load(data.shadow);
     this.zIndex.load(data.zIndex);
-    const collisions = data.move?.collisions ?? data.move?.bounce;
-    if (collisions !== void 0) {
-      this.collisions.enable = collisions;
-    }
     this.collisions.load(data.collisions);
     if (data.interactivity !== void 0) {
       this.interactivity = deepExtend({}, data.interactivity);
     }
-    const strokeToLoad = data.stroke ?? data.shape?.stroke;
+    const strokeToLoad = data.stroke;
     if (strokeToLoad) {
       this.stroke = executeOnSingleOrMultiple(strokeToLoad, (t) => {
         const tmp = new Stroke();
@@ -3008,7 +2824,7 @@ class ParticlesOptions {
       });
     }
     if (this._container) {
-      const updaters = this._engine.plugins.updaters.get(this._container);
+      const updaters = this._engine.updaters.get(this._container);
       if (updaters) {
         for (const updater of updaters) {
           if (updater.loadOptions) {
@@ -3016,7 +2832,7 @@ class ParticlesOptions {
           }
         }
       }
-      const interactors = this._engine.plugins.interactors.get(this._container);
+      const interactors = this._engine.interactors.get(this._container);
       if (interactors) {
         for (const interactor of interactors) {
           if (interactor.loadParticlesOptions) {
@@ -3043,13 +2859,14 @@ class Options {
       return this.themes.find((theme) => theme.default.value && theme.default.mode === mode) ?? this.themes.find((theme) => theme.default.value && theme.default.mode === "any");
     };
     this._importPreset = (preset) => {
-      this.load(this._engine.plugins.getPreset(preset));
+      this.load(this._engine.getPreset(preset));
     };
     this._engine = engine;
     this._container = container;
     this.autoPlay = true;
-    this.background = new Background();
+    this.background = new Background$1();
     this.backgroundMask = new BackgroundMask();
+    this.clear = true;
     this.defaultThemes = {};
     this.delay = 0;
     this.fullScreen = new FullScreen();
@@ -3067,24 +2884,6 @@ class Options {
     this.themes = [];
     this.zLayers = 100;
   }
-  get backgroundMode() {
-    return this.fullScreen;
-  }
-  set backgroundMode(value) {
-    this.fullScreen.load(value);
-  }
-  get fps_limit() {
-    return this.fpsLimit;
-  }
-  set fps_limit(value) {
-    this.fpsLimit = value;
-  }
-  get retina_detect() {
-    return this.detectRetina;
-  }
-  set retina_detect(value) {
-    this.detectRetina = value;
-  }
   load(data) {
     if (!data) {
       return;
@@ -3095,17 +2894,23 @@ class Options {
     if (data.autoPlay !== void 0) {
       this.autoPlay = data.autoPlay;
     }
+    if (data.clear !== void 0) {
+      this.clear = data.clear;
+    }
+    if (data.name !== void 0) {
+      this.name = data.name;
+    }
     if (data.delay !== void 0) {
       this.delay = setRangeValue(data.delay);
     }
-    const detectRetina = data.detectRetina ?? data.retina_detect;
+    const detectRetina = data.detectRetina;
     if (detectRetina !== void 0) {
       this.detectRetina = detectRetina;
     }
     if (data.duration !== void 0) {
       this.duration = setRangeValue(data.duration);
     }
-    const fpsLimit = data.fpsLimit ?? data.fps_limit;
+    const fpsLimit = data.fpsLimit;
     if (fpsLimit !== void 0) {
       this.fpsLimit = fpsLimit;
     }
@@ -3119,7 +2924,7 @@ class Options {
       this.zLayers = data.zLayers;
     }
     this.background.load(data.background);
-    const fullScreen = data.fullScreen ?? data.backgroundMode;
+    const fullScreen = data.fullScreen;
     if (isBoolean(fullScreen)) {
       this.fullScreen.enable = fullScreen;
     } else {
@@ -3136,11 +2941,11 @@ class Options {
     }
     this.particles.load(data.particles);
     this.style = deepExtend(this.style, data.style);
-    this._engine.plugins.loadOptions(this, data);
+    this._engine.loadOptions(this, data);
     if (data.smooth !== void 0) {
       this.smooth = data.smooth;
     }
-    const interactors = this._engine.plugins.interactors.get(this._container);
+    const interactors = this._engine.interactors.get(this._container);
     if (interactors) {
       for (const interactor of interactors) {
         if (interactor.loadOptions) {
@@ -3195,7 +3000,7 @@ class InteractionManager {
   constructor(engine, container) {
     this.container = container;
     this._engine = engine;
-    this._interactors = engine.plugins.getInteractors(this.container, true);
+    this._interactors = engine.getInteractors(this.container, true);
     this._externalInteractors = [];
     this._particleInteractors = [];
   }
@@ -3241,7 +3046,27 @@ class InteractionManager {
     }
   }
 }
-const fixOutMode = (data) => {
+function loadEffectData(effect, effectOptions, id, reduceDuplicates) {
+  const effectData = effectOptions.options[effect];
+  if (!effectData) {
+    return;
+  }
+  return deepExtend({
+    close: effectOptions.close,
+    fill: effectOptions.fill
+  }, itemFromSingleOrMultiple(effectData, id, reduceDuplicates));
+}
+function loadShapeData(shape, shapeOptions, id, reduceDuplicates) {
+  const shapeData = shapeOptions.options[shape];
+  if (!shapeData) {
+    return;
+  }
+  return deepExtend({
+    close: shapeOptions.close,
+    fill: shapeOptions.fill
+  }, itemFromSingleOrMultiple(shapeData, id, reduceDuplicates));
+}
+function fixOutMode(data) {
   if (!isInArray(data.outMode, data.checkModes)) {
     return;
   }
@@ -3251,7 +3076,7 @@ const fixOutMode = (data) => {
   } else if (data.coord < diameter) {
     data.setCb(data.radius);
   }
-};
+}
 class Particle {
   constructor(engine, id, container, position, overrideOptions, group) {
     this.container = container;
@@ -3299,8 +3124,8 @@ class Particle {
         return res;
       }
       const rad = Math.PI / 180 * getRangeValue(moveOptions.angle.value), radOffset = Math.PI / 180 * getRangeValue(moveOptions.angle.offset), range = {
-        left: radOffset - rad / 2,
-        right: radOffset + rad / 2
+        left: radOffset - rad * 0.5,
+        right: radOffset + rad * 0.5
       };
       if (!moveOptions.straight) {
         res.angle += randomInRange(setRangeValue(range.left, range.right));
@@ -3329,7 +3154,7 @@ class Particle {
       if (!color || !this.roll || !this.backColor && !this.roll.alter) {
         return color;
       }
-      const backFactor = this.roll.horizontal && this.roll.vertical ? 2 : 1, backSum = this.roll.horizontal ? Math.PI / 2 : 0, rolled = Math.floor(((this.roll.angle ?? 0) + backSum) / (Math.PI / backFactor)) % 2;
+      const backFactor = this.roll.horizontal && this.roll.vertical ? 2 : 1, backSum = this.roll.horizontal ? Math.PI * 0.5 : 0, rolled = Math.floor(((this.roll.angle ?? 0) + backSum) / (Math.PI / backFactor)) % 2;
       if (!rolled) {
         return color;
       }
@@ -3362,16 +3187,6 @@ class Particle {
       }
       this.offset = Vector.origin;
     };
-    this._loadShapeData = (shapeOptions, reduceDuplicates) => {
-      const shapeData = shapeOptions.options[this.shape];
-      if (!shapeData) {
-        return;
-      }
-      return deepExtend({
-        close: shapeOptions.close,
-        fill: shapeOptions.fill
-      }, itemFromSingleOrMultiple(shapeData, this.id, reduceDuplicates));
-    };
     this._engine = engine;
     this.init(id, position, overrideOptions, group);
   }
@@ -3382,33 +3197,34 @@ class Particle {
     this.destroyed = true;
     this.bubble.inRange = false;
     this.slow.inRange = false;
-    const container = this.container, pathGenerator = this.pathGenerator;
+    const container = this.container, pathGenerator = this.pathGenerator, shapeDrawer = container.shapeDrawers.get(this.shape);
+    shapeDrawer && shapeDrawer.particleDestroy && shapeDrawer.particleDestroy(this);
     for (const [, plugin] of container.plugins) {
-      if (plugin.particleDestroyed) {
-        plugin.particleDestroyed(this, override);
-      }
+      plugin.particleDestroyed && plugin.particleDestroyed(this, override);
     }
     for (const updater of container.particles.updaters) {
-      if (updater.particleDestroyed) {
-        updater.particleDestroyed(this, override);
+      updater.particleDestroyed && updater.particleDestroyed(this, override);
+    }
+    pathGenerator && pathGenerator.reset(this);
+    this._engine.dispatchEvent("particleDestroyed", {
+      container: this.container,
+      data: {
+        particle: this
       }
-    }
-    if (pathGenerator) {
-      pathGenerator.reset(this);
-    }
+    });
   }
   draw(delta) {
-    const container = this.container;
+    const container = this.container, canvas = container.canvas;
     for (const [, plugin] of container.plugins) {
-      container.canvas.drawParticlePlugin(plugin, this, delta);
+      canvas.drawParticlePlugin(plugin, this, delta);
     }
-    container.canvas.drawParticle(this, delta);
+    canvas.drawParticle(this, delta);
   }
   getFillColor() {
     return this._getRollColor(this.bubble.color ?? getHslFromAnimation(this.color));
   }
   getMass() {
-    return this.getRadius() ** 2 * Math.PI / 2;
+    return this.getRadius() ** 2 * Math.PI * 0.5;
   }
   getPosition() {
     return {
@@ -3427,9 +3243,11 @@ class Particle {
     const container = this.container, engine = this._engine;
     this.id = id;
     this.group = group;
-    this.fill = true;
+    this.effectClose = true;
+    this.effectFill = true;
+    this.shapeClose = true;
+    this.shapeFill = true;
     this.pathRotation = false;
-    this.close = true;
     this.lastPathTime = 0;
     this.destroyed = false;
     this.unbreakable = false;
@@ -3440,18 +3258,33 @@ class Particle {
     };
     this.outType = "normal";
     this.ignoresResizeRatio = true;
-    const pxRatio = container.retina.pixelRatio, mainOptions = container.actualOptions, particlesOptions = loadParticlesOptions(this._engine, container, mainOptions.particles), shapeType = particlesOptions.shape.type, { reduceDuplicates } = particlesOptions;
+    const pxRatio = container.retina.pixelRatio, mainOptions = container.actualOptions, particlesOptions = loadParticlesOptions(this._engine, container, mainOptions.particles), effectType = particlesOptions.effect.type, shapeType = particlesOptions.shape.type, { reduceDuplicates } = particlesOptions;
+    this.effect = itemFromSingleOrMultiple(effectType, this.id, reduceDuplicates);
     this.shape = itemFromSingleOrMultiple(shapeType, this.id, reduceDuplicates);
-    const shapeOptions = particlesOptions.shape;
-    if (overrideOptions && overrideOptions.shape && overrideOptions.shape.type) {
-      const overrideShapeType = overrideOptions.shape.type, shape = itemFromSingleOrMultiple(overrideShapeType, this.id, reduceDuplicates);
-      if (shape) {
-        this.shape = shape;
-        shapeOptions.load(overrideOptions.shape);
+    const effectOptions = particlesOptions.effect, shapeOptions = particlesOptions.shape;
+    if (overrideOptions) {
+      if (overrideOptions.effect && overrideOptions.effect.type) {
+        const overrideEffectType = overrideOptions.effect.type, effect = itemFromSingleOrMultiple(overrideEffectType, this.id, reduceDuplicates);
+        if (effect) {
+          this.effect = effect;
+          effectOptions.load(overrideOptions.effect);
+        }
+      }
+      if (overrideOptions.shape && overrideOptions.shape.type) {
+        const overrideShapeType = overrideOptions.shape.type, shape = itemFromSingleOrMultiple(overrideShapeType, this.id, reduceDuplicates);
+        if (shape) {
+          this.shape = shape;
+          shapeOptions.load(overrideOptions.shape);
+        }
       }
     }
-    this.shapeData = this._loadShapeData(shapeOptions, reduceDuplicates);
+    this.effectData = loadEffectData(this.effect, effectOptions, this.id, reduceDuplicates);
+    this.shapeData = loadShapeData(this.shape, shapeOptions, this.id, reduceDuplicates);
     particlesOptions.load(overrideOptions);
+    const effectData = this.effectData;
+    if (effectData) {
+      particlesOptions.load(effectData.particles);
+    }
     const shapeData = this.shapeData;
     if (shapeData) {
       particlesOptions.load(shapeData.particles);
@@ -3460,13 +3293,15 @@ class Particle {
     interactivity.load(container.actualOptions.interactivity);
     interactivity.load(particlesOptions.interactivity);
     this.interactivity = interactivity;
-    this.fill = shapeData?.fill ?? particlesOptions.shape.fill;
-    this.close = shapeData?.close ?? particlesOptions.shape.close;
+    this.effectFill = effectData?.fill ?? particlesOptions.effect.fill;
+    this.effectClose = effectData?.close ?? particlesOptions.effect.close;
+    this.shapeFill = shapeData?.fill ?? particlesOptions.shape.fill;
+    this.shapeClose = shapeData?.close ?? particlesOptions.shape.close;
     this.options = particlesOptions;
     const pathOptions = this.options.move.path;
-    this.pathDelay = getValue(pathOptions.delay) * 1e3;
+    this.pathDelay = getRangeValue(pathOptions.delay.value) * 1e3;
     if (pathOptions.generator) {
-      this.pathGenerator = this._engine.plugins.getPathGenerator(pathOptions.generator);
+      this.pathGenerator = this._engine.getPathGenerator(pathOptions.generator);
       if (this.pathGenerator && container.addPath(pathOptions.generator, this.pathGenerator)) {
         this.pathGenerator.init(container);
       }
@@ -3485,34 +3320,46 @@ class Particle {
     this.velocity = this.initialVelocity.copy();
     this.moveDecay = 1 - getRangeValue(this.options.move.decay);
     const particles = container.particles;
-    particles.needsSort = particles.needsSort || particles.lastZIndex < this.position.z;
-    particles.lastZIndex = this.position.z;
+    particles.setLastZIndex(this.position.z);
     this.zIndexFactor = this.position.z / container.zLayers;
     this.sides = 24;
-    let drawer = container.drawers.get(this.shape);
-    if (!drawer) {
-      drawer = this._engine.plugins.getShapeDrawer(this.shape);
-      if (drawer) {
-        container.drawers.set(this.shape, drawer);
+    let effectDrawer = container.effectDrawers.get(this.effect);
+    if (!effectDrawer) {
+      effectDrawer = this._engine.getEffectDrawer(this.effect);
+      if (effectDrawer) {
+        container.effectDrawers.set(this.effect, effectDrawer);
       }
     }
-    if (drawer && drawer.loadShape) {
-      drawer.loadShape(this);
+    if (effectDrawer && effectDrawer.loadEffect) {
+      effectDrawer.loadEffect(this);
     }
-    const sideCountFunc = drawer?.getSidesCount;
+    let shapeDrawer = container.shapeDrawers.get(this.shape);
+    if (!shapeDrawer) {
+      shapeDrawer = this._engine.getShapeDrawer(this.shape);
+      if (shapeDrawer) {
+        container.shapeDrawers.set(this.shape, shapeDrawer);
+      }
+    }
+    if (shapeDrawer && shapeDrawer.loadShape) {
+      shapeDrawer.loadShape(this);
+    }
+    const sideCountFunc = shapeDrawer?.getSidesCount;
     if (sideCountFunc) {
       this.sides = sideCountFunc(this);
     }
     this.spawning = false;
     this.shadowColor = rangeColorToRgb(this.options.shadow.color);
-    for (const updater of container.particles.updaters) {
+    for (const updater of particles.updaters) {
       updater.init(this);
     }
-    for (const mover of container.particles.movers) {
+    for (const mover of particles.movers) {
       mover.init && mover.init(this);
     }
-    if (drawer && drawer.particleInit) {
-      drawer.particleInit(container, this);
+    if (effectDrawer && effectDrawer.particleInit) {
+      effectDrawer.particleInit(container, this);
+    }
+    if (shapeDrawer && shapeDrawer.particleInit) {
+      shapeDrawer.particleInit(container, this);
     }
     for (const [, plugin] of container.plugins) {
       plugin.particleCreated && plugin.particleCreated(this);
@@ -3592,7 +3439,7 @@ class QuadTree {
     this._subdivide = () => {
       const { x, y } = this.rectangle.position, { width, height } = this.rectangle.size, { capacity: capacity2 } = this;
       for (let i = 0; i < 4; i++) {
-        this._subs.push(new QuadTree(new Rectangle(x + width / 2 * (i % 2), y + height / 2 * (Math.round(i / 2) - i % 2), width / 2, height / 2), capacity2));
+        this._subs.push(new QuadTree(new Rectangle(x + width * 0.5 * (i % 2), y + height * 0.5 * (Math.round(i * 0.5) - i % 2), width * 0.5, height * 0.5), capacity2));
       }
       this._divided = true;
     };
@@ -3640,16 +3487,32 @@ class QuadTree {
 }
 const qTreeCapacity = 4;
 const qTreeRectangle = (canvasSize) => {
-  return new Rectangle(-canvasSize.width / 4, -canvasSize.height / 4, canvasSize.width * 3 / 2, canvasSize.height * 3 / 2);
+  const { height, width } = canvasSize, posOffset = -0.25, sizeFactor = 1.5;
+  return new Rectangle(posOffset * width, posOffset * height, sizeFactor * width, sizeFactor * height);
 };
-let Particles$2 = class Particles {
+let Particles$1 = class Particles {
   constructor(engine, container) {
+    this._addToPool = (...particles) => {
+      for (const particle of particles) {
+        this._pool.push(particle);
+      }
+    };
     this._applyDensity = (options, manualCount, group) => {
+      const numberOptions = options.number;
       if (!options.number.density?.enable) {
+        if (group === void 0) {
+          this._limit = numberOptions.limit.value;
+        } else if (numberOptions.limit) {
+          this._groupLimits.set(group, numberOptions.limit.value);
+        }
         return;
       }
-      const numberOptions = options.number, densityFactor = this._initDensityFactor(numberOptions.density), optParticlesNumber = numberOptions.value, optParticlesLimit = numberOptions.limit > 0 ? numberOptions.limit : optParticlesNumber, particlesNumber = Math.min(optParticlesNumber, optParticlesLimit) * densityFactor + manualCount, particlesCount = Math.min(this.count, this.filter((t) => t.group === group).length);
-      this.limit = numberOptions.limit * densityFactor;
+      const densityFactor = this._initDensityFactor(numberOptions.density), optParticlesNumber = numberOptions.value, optParticlesLimit = numberOptions.limit.value > 0 ? numberOptions.limit.value : optParticlesNumber, particlesNumber = Math.min(optParticlesNumber, optParticlesLimit) * densityFactor + manualCount, particlesCount = Math.min(this.count, this.filter((t) => t.group === group).length);
+      if (group === void 0) {
+        this._limit = numberOptions.limit.value * densityFactor;
+      } else {
+        this._groupLimits.set(group, numberOptions.limit.value * densityFactor);
+      }
       if (particlesCount < particlesNumber) {
         this.push(Math.abs(particlesNumber - particlesCount), void 0, options, group);
       } else if (particlesCount > particlesNumber) {
@@ -3662,11 +3525,11 @@ let Particles$2 = class Particles {
         return 1;
       }
       const canvas = container2.canvas.element, pxRatio = container2.retina.pixelRatio;
-      return canvas.width * canvas.height / (densityOptions.factor * pxRatio ** 2 * densityOptions.area);
+      return canvas.width * canvas.height / (densityOptions.height * densityOptions.width * pxRatio ** 2);
     };
     this._pushParticle = (position, overrideOptions, group, initializer) => {
       try {
-        let particle = this.pool.pop();
+        let particle = this._pool.pop();
         if (particle) {
           particle.init(this._nextId, position, overrideOptions, group);
         } else {
@@ -3699,17 +3562,17 @@ let Particles$2 = class Particles {
       if (!particle || particle.group !== group) {
         return false;
       }
-      particle.destroy(override);
       const zIdx = this._zArray.indexOf(particle);
       this._array.splice(index, 1);
       this._zArray.splice(zIdx, 1);
-      this.pool.push(particle);
+      particle.destroy(override);
       this._engine.dispatchEvent("particleRemoved", {
         container: this._container,
         data: {
           particle
         }
       });
+      this._addToPool(particle);
       return true;
     };
     this._engine = engine;
@@ -3717,15 +3580,16 @@ let Particles$2 = class Particles {
     this._nextId = 0;
     this._array = [];
     this._zArray = [];
-    this.pool = [];
-    this.limit = 0;
-    this.needsSort = false;
-    this.lastZIndex = 0;
+    this._pool = [];
+    this._limit = 0;
+    this._groupLimits = /* @__PURE__ */ new Map();
+    this._needsSort = false;
+    this._lastZIndex = 0;
     this._interactionManager = new InteractionManager(engine, container);
     const canvasSize = container.canvas.size;
     this.quadTree = new QuadTree(qTreeRectangle(canvasSize), qTreeCapacity);
-    this.movers = this._engine.plugins.getMovers(container, true);
-    this.updaters = this._engine.plugins.getUpdaters(container, true);
+    this.movers = this._engine.getMovers(container, true);
+    this.updaters = this._engine.getUpdaters(container, true);
   }
   get count() {
     return this._array.length;
@@ -3737,11 +3601,17 @@ let Particles$2 = class Particles {
     }
   }
   addParticle(position, overrideOptions, group, initializer) {
-    const container = this._container, options = container.actualOptions, limit = options.particles.number.limit;
+    const limitOptions = this._container.actualOptions.particles.number.limit, limit = group === void 0 ? this._limit : this._groupLimits.get(group) ?? this._limit, currentCount = this.count;
     if (limit > 0) {
-      const countToRemove = this.count + 1 - limit;
-      if (countToRemove > 0) {
-        this.removeQuantity(countToRemove);
+      if (limitOptions.mode === "delete") {
+        const countToRemove = currentCount + 1 - limit;
+        if (countToRemove > 0) {
+          this.removeQuantity(countToRemove);
+        }
+      } else if (limitOptions.mode === "wait") {
+        if (currentCount >= limit) {
+          return;
+        }
       }
     }
     return this._pushParticle(position, overrideOptions, group, initializer);
@@ -3757,11 +3627,11 @@ let Particles$2 = class Particles {
     this.updaters = [];
   }
   async draw(delta) {
-    const container = this._container;
-    container.canvas.clear();
+    const container = this._container, canvas = container.canvas;
+    canvas.clear();
     await this.update(delta);
     for (const [, plugin] of container.plugins) {
-      container.canvas.drawPlugin(plugin, delta);
+      canvas.drawPlugin(plugin, delta);
     }
     for (const p of this._zArray) {
       p.draw(delta);
@@ -3773,15 +3643,18 @@ let Particles$2 = class Particles {
   find(condition) {
     return this._array.find(condition);
   }
+  get(index) {
+    return this._array[index];
+  }
   handleClickMode(mode) {
     this._interactionManager.handleClickMode(mode);
   }
   init() {
     const container = this._container, options = container.actualOptions;
-    this.lastZIndex = 0;
-    this.needsSort = false;
+    this._lastZIndex = 0;
+    this._needsSort = false;
     let handled = false;
-    this.updaters = this._engine.plugins.getUpdaters(container, true);
+    this.updaters = this._engine.getUpdaters(container, true);
     this._interactionManager.init();
     for (const [, plugin] of container.plugins) {
       if (plugin.particlesInitialization !== void 0) {
@@ -3797,23 +3670,22 @@ let Particles$2 = class Particles {
     }
     this.addManualParticles();
     if (!handled) {
-      for (const group in options.particles.groups) {
-        const groupOptions = options.particles.groups[group];
-        for (let i = this.count, j = 0; j < groupOptions.number?.value && i < options.particles.number.value; i++, j++) {
+      const particlesOptions = options.particles, groups = particlesOptions.groups;
+      for (const group in groups) {
+        const groupOptions = groups[group];
+        for (let i = this.count, j = 0; j < groupOptions.number?.value && i < particlesOptions.number.value; i++, j++) {
           this.addParticle(void 0, groupOptions, group);
         }
       }
-      for (let i = this.count; i < options.particles.number.value; i++) {
+      for (let i = this.count; i < particlesOptions.number.value; i++) {
         this.addParticle();
       }
     }
   }
   push(nb, mouse, overrideOptions, group) {
-    this.pushing = true;
     for (let i = 0; i < nb; i++) {
       this.addParticle(mouse?.position, overrideOptions, group);
     }
-    this.pushing = false;
   }
   async redraw() {
     this.clear();
@@ -3842,6 +3714,13 @@ let Particles$2 = class Particles {
     }
     this._applyDensity(options.particles, options.manualParticles.length);
   }
+  setLastZIndex(zIndex) {
+    this._lastZIndex = zIndex;
+    this._needsSort = this._needsSort || this._lastZIndex < zIndex;
+  }
+  setResizeFactor(factor) {
+    this._resizeFactor = factor;
+  }
   async update(delta) {
     const container = this._container, particlesToDelete = /* @__PURE__ */ new Set();
     this.quadTree = new QuadTree(qTreeRectangle(container.canvas.size), qTreeCapacity);
@@ -3849,10 +3728,10 @@ let Particles$2 = class Particles {
       pathGenerator.update();
     }
     for (const [, plugin] of container.plugins) {
-      plugin.update && plugin.update(delta);
+      plugin.update && await plugin.update(delta);
     }
+    const resizeFactor = this._resizeFactor;
     for (const particle of this._array) {
-      const resizeFactor = container.canvas.resizeFactor;
       if (resizeFactor && !particle.ignoresResizeRatio) {
         particle.position.x *= resizeFactor.width;
         particle.position.y *= resizeFactor.height;
@@ -3865,9 +3744,7 @@ let Particles$2 = class Particles {
         if (particle.destroyed) {
           break;
         }
-        if (plugin.particleUpdate) {
-          plugin.particleUpdate(particle, delta);
-        }
+        plugin.particleUpdate && plugin.particleUpdate(particle, delta);
       }
       for (const mover of this.movers) {
         mover.isEnabled(particle) && mover.move(particle, delta);
@@ -3882,7 +3759,15 @@ let Particles$2 = class Particles {
       const checkDelete = (p) => !particlesToDelete.has(p);
       this._array = this.filter(checkDelete);
       this._zArray = this._zArray.filter(checkDelete);
-      this.pool.push(...particlesToDelete);
+      for (const particle of particlesToDelete) {
+        this._engine.dispatchEvent("particleRemoved", {
+          container: this._container,
+          data: {
+            particle
+          }
+        });
+      }
+      this._addToPool(...particlesToDelete);
     }
     await this._interactionManager.externalInteract(delta);
     for (const particle of this._array) {
@@ -3893,12 +3778,12 @@ let Particles$2 = class Particles {
         await this._interactionManager.particlesInteract(particle, delta);
       }
     }
-    delete container.canvas.resizeFactor;
-    if (this.needsSort) {
+    delete this._resizeFactor;
+    if (this._needsSort) {
       const zArray = this._zArray;
       zArray.sort((a, b) => b.position.z - a.position.z || a.id - b.id);
-      this.lastZIndex = zArray[zArray.length - 1].position.z;
-      this.needsSort = false;
+      this._lastZIndex = zArray[zArray.length - 1].position.z;
+      this._needsSort = false;
     }
   }
 };
@@ -3912,20 +3797,18 @@ class Retina {
     const container = this.container, options = container.actualOptions;
     this.pixelRatio = !options.detectRetina || isSsr() ? 1 : window.devicePixelRatio;
     this.reduceFactor = 1;
-    const ratio = this.pixelRatio;
-    if (container.canvas.element) {
-      const element = container.canvas.element;
-      container.canvas.size.width = element.offsetWidth * ratio;
-      container.canvas.size.height = element.offsetHeight * ratio;
+    const ratio = this.pixelRatio, canvas = container.canvas;
+    if (canvas.element) {
+      const element = canvas.element;
+      canvas.size.width = element.offsetWidth * ratio;
+      canvas.size.height = element.offsetHeight * ratio;
     }
     const particles = options.particles, moveOptions = particles.move;
-    this.attractDistance = getRangeValue(moveOptions.attract.distance) * ratio;
     this.maxSpeed = getRangeValue(moveOptions.gravity.maxSpeed) * ratio;
     this.sizeAnimationSpeed = getRangeValue(particles.size.animation.speed) * ratio;
   }
   initParticle(particle) {
     const options = particle.options, ratio = this.pixelRatio, moveOptions = options.move, moveDistance = moveOptions.distance, props = particle.retina;
-    props.attractDistance = getRangeValue(moveOptions.attract.distance) * ratio;
     props.moveDrift = getRangeValue(moveOptions.drift) * ratio;
     props.moveSpeed = getRangeValue(moveOptions.speed) * ratio;
     props.sizeAnimationSpeed = getRangeValue(options.size.animation.speed) * ratio;
@@ -3949,18 +3832,8 @@ function loadContainerOptions(engine, container, ...sourceOptionsArr) {
   loadOptions(options, ...sourceOptionsArr);
   return options;
 }
-const defaultPathGeneratorKey = "default", defaultPathGenerator = {
-  generate: (p) => p.velocity,
-  init: () => {
-  },
-  update: () => {
-  },
-  reset: () => {
-  }
-};
 class Container {
   constructor(engine, id, sourceOptions) {
-    this.id = id;
     this._intersectionManager = (entries) => {
       if (!guardCheck(this) || !this.actualOptions.pauseOnOutsideViewport) {
         return;
@@ -3974,14 +3847,14 @@ class Container {
     };
     this._nextFrame = async (timestamp) => {
       try {
-        if (!this.smooth && this.lastFrameTime !== void 0 && timestamp < this.lastFrameTime + 1e3 / this.fpsLimit) {
+        if (!this._smooth && this._lastFrameTime !== void 0 && timestamp < this._lastFrameTime + 1e3 / this.fpsLimit) {
           this.draw(false);
           return;
         }
-        this.lastFrameTime ??= timestamp;
-        const delta = initDelta(timestamp - this.lastFrameTime, this.fpsLimit, this.smooth);
+        this._lastFrameTime ??= timestamp;
+        const delta = initDelta(timestamp - this._lastFrameTime, this.fpsLimit, this._smooth);
         this.addLifeTime(delta.value);
-        this.lastFrameTime = timestamp;
+        this._lastFrameTime = timestamp;
         if (delta.value > 1e3) {
           this.draw(false);
           return;
@@ -3999,8 +3872,9 @@ class Container {
       }
     };
     this._engine = engine;
+    this.id = Symbol(id);
     this.fpsLimit = 120;
-    this.smooth = false;
+    this._smooth = false;
     this._delay = 0;
     this._duration = 0;
     this._lifeTime = 0;
@@ -4008,14 +3882,14 @@ class Container {
     this.started = false;
     this.destroyed = false;
     this._paused = true;
-    this.lastFrameTime = 0;
+    this._lastFrameTime = 0;
     this.zLayers = 100;
     this.pageHidden = false;
     this._sourceOptions = sourceOptions;
     this._initialSourceOptions = sourceOptions;
     this.retina = new Retina(this);
     this.canvas = new Canvas(this);
-    this.particles = new Particles$2(this._engine, this);
+    this.particles = new Particles$1(this._engine, this);
     this.pathGenerators = /* @__PURE__ */ new Map();
     this.interactivity = {
       mouse: {
@@ -4024,13 +3898,12 @@ class Container {
       }
     };
     this.plugins = /* @__PURE__ */ new Map();
-    this.drawers = /* @__PURE__ */ new Map();
+    this.effectDrawers = /* @__PURE__ */ new Map();
+    this.shapeDrawers = /* @__PURE__ */ new Map();
     this._options = loadContainerOptions(this._engine, this);
     this.actualOptions = loadContainerOptions(this._engine, this);
     this._eventListeners = new EventListeners(this);
-    if (typeof IntersectionObserver !== "undefined" && IntersectionObserver) {
-      this._intersectionObserver = new IntersectionObserver((entries) => this._intersectionManager(entries));
-    }
+    this._intersectionObserver = safeIntersectionObserver((entries) => this._intersectionManager(entries));
     this._engine.dispatchEvent("containerBuilt", { container: this });
   }
   get options() {
@@ -4123,7 +3996,7 @@ class Container {
     if (!guardCheck(this) || !override && this.pathGenerators.has(key)) {
       return false;
     }
-    this.pathGenerators.set(key, generator ?? defaultPathGenerator);
+    this.pathGenerators.set(key, generator);
     return true;
   }
   alive() {
@@ -4136,13 +4009,19 @@ class Container {
     this.stop();
     this.particles.destroy();
     this.canvas.destroy();
-    for (const [, drawer] of this.drawers) {
-      drawer.destroy && drawer.destroy(this);
+    for (const [, effectDrawer] of this.effectDrawers) {
+      effectDrawer.destroy && effectDrawer.destroy(this);
     }
-    for (const key of this.drawers.keys()) {
-      this.drawers.delete(key);
+    for (const [, shapeDrawer] of this.shapeDrawers) {
+      shapeDrawer.destroy && shapeDrawer.destroy(this);
     }
-    this._engine.plugins.destroy(this);
+    for (const key of this.effectDrawers.keys()) {
+      this.effectDrawers.delete(key);
+    }
+    for (const key of this.shapeDrawers.keys()) {
+      this.shapeDrawers.delete(key);
+    }
+    this._engine.clearPlugins(this);
     this.destroyed = true;
     const mainArr = this._engine.dom(), idx = mainArr.findIndex((t) => t === this);
     if (idx >= 0) {
@@ -4157,7 +4036,7 @@ class Container {
     let refreshTime = force;
     this._drawAnimationFrame = requestAnimationFrame(async (timestamp) => {
       if (refreshTime) {
-        this.lastFrameTime = void 0;
+        this._lastFrameTime = void 0;
         refreshTime = false;
       }
       await this._nextFrame(timestamp);
@@ -4192,16 +4071,23 @@ class Container {
     if (!guardCheck(this)) {
       return;
     }
-    const shapes2 = this._engine.plugins.getSupportedShapes();
-    for (const type of shapes2) {
-      const drawer = this._engine.plugins.getShapeDrawer(type);
+    const effects = this._engine.getSupportedEffects();
+    for (const type of effects) {
+      const drawer = this._engine.getEffectDrawer(type);
       if (drawer) {
-        this.drawers.set(type, drawer);
+        this.effectDrawers.set(type, drawer);
+      }
+    }
+    const shapes = this._engine.getSupportedShapes();
+    for (const type of shapes) {
+      const drawer = this._engine.getShapeDrawer(type);
+      if (drawer) {
+        this.shapeDrawers.set(type, drawer);
       }
     }
     this._options = loadContainerOptions(this._engine, this, this._initialSourceOptions, this.sourceOptions);
     this.actualOptions = loadContainerOptions(this._engine, this, this._options);
-    const availablePlugins = this._engine.plugins.getAvailablePlugins(this);
+    const availablePlugins = this._engine.getAvailablePlugins(this);
     for (const [id, plugin] of availablePlugins) {
       this.plugins.set(id, plugin);
     }
@@ -4215,8 +4101,11 @@ class Container {
     this._delay = getRangeValue(this.actualOptions.delay) * 1e3;
     this._lifeTime = 0;
     this.fpsLimit = this.actualOptions.fpsLimit > 0 ? this.actualOptions.fpsLimit : 120;
-    this.smooth = this.actualOptions.smooth;
-    for (const [, drawer] of this.drawers) {
+    this._smooth = this.actualOptions.smooth;
+    for (const [, drawer] of this.effectDrawers) {
+      drawer.init && await drawer.init(this);
+    }
+    for (const [, drawer] of this.shapeDrawers) {
       drawer.init && await drawer.init(this);
     }
     for (const [, plugin] of this.plugins) {
@@ -4294,33 +4183,6 @@ class Container {
     this.actualOptions = loadContainerOptions(this._engine, this, this._options);
     return this.refresh();
   }
-  setNoise(noiseOrGenerator, init2, update) {
-    if (!guardCheck(this)) {
-      return;
-    }
-    this.setPath(noiseOrGenerator, init2, update);
-  }
-  setPath(pathOrGenerator, init2, update) {
-    if (!pathOrGenerator || !guardCheck(this)) {
-      return;
-    }
-    const pathGenerator = { ...defaultPathGenerator };
-    if (isFunction(pathOrGenerator)) {
-      pathGenerator.generate = pathOrGenerator;
-      if (init2) {
-        pathGenerator.init = init2;
-      }
-      if (update) {
-        pathGenerator.update = update;
-      }
-    } else {
-      const oldGenerator = pathGenerator;
-      pathGenerator.generate = pathOrGenerator.generate || oldGenerator.generate;
-      pathGenerator.init = pathOrGenerator.init || oldGenerator.init;
-      pathGenerator.update = pathOrGenerator.update || oldGenerator.update;
-    }
-    this.addPath(defaultPathGeneratorKey, pathGenerator, true);
-  }
   async start() {
     if (!guardCheck(this) || this.started) {
       return;
@@ -4372,10 +4234,10 @@ class Container {
     this.actualOptions.responsive = [];
     const newMaxWidth = this.actualOptions.setResponsive(this.canvas.size.width, this.retina.pixelRatio, this._options);
     this.actualOptions.setTheme(this._currentTheme);
-    if (this.responsiveMaxWidth === newMaxWidth) {
+    if (this._responsiveMaxWidth === newMaxWidth) {
       return false;
     }
-    this.responsiveMaxWidth = newMaxWidth;
+    this._responsiveMaxWidth = newMaxWidth;
     return true;
   }
 }
@@ -4430,9 +4292,24 @@ function getItemsFromInitializer(container, map, initializers, force = false) {
   }
   return res;
 }
-class Plugins {
-  constructor(engine) {
-    this._engine = engine;
+async function getDataFromUrl(data) {
+  const url = itemFromSingleOrMultiple(data.url, data.index);
+  if (!url) {
+    return data.fallback;
+  }
+  const response = await fetch(url);
+  if (response.ok) {
+    return response.json();
+  }
+  getLogger().error(`${errorPrefix} ${response.status} while retrieving config file`);
+  return data.fallback;
+}
+class Engine {
+  constructor() {
+    this._configs = /* @__PURE__ */ new Map();
+    this._domArray = [];
+    this._eventDispatcher = new EventDispatcher();
+    this._initialized = false;
     this.plugins = [];
     this._initializers = {
       interactors: /* @__PURE__ */ new Map(),
@@ -4443,36 +4320,82 @@ class Plugins {
     this.movers = /* @__PURE__ */ new Map();
     this.updaters = /* @__PURE__ */ new Map();
     this.presets = /* @__PURE__ */ new Map();
-    this.drawers = /* @__PURE__ */ new Map();
+    this.effectDrawers = /* @__PURE__ */ new Map();
+    this.shapeDrawers = /* @__PURE__ */ new Map();
     this.pathGenerators = /* @__PURE__ */ new Map();
   }
-  addInteractor(name, initInteractor) {
-    this._initializers.interactors.set(name, initInteractor);
+  get configs() {
+    const res = {};
+    for (const [name, config] of this._configs) {
+      res[name] = config;
+    }
+    return res;
   }
-  addParticleMover(name, initMover) {
-    this._initializers.movers.set(name, initMover);
+  get version() {
+    return "3.0.3";
   }
-  addParticleUpdater(name, initUpdater) {
-    this._initializers.updaters.set(name, initUpdater);
+  addConfig(config) {
+    const name = config.name ?? "default";
+    this._configs.set(name, config);
+    this._eventDispatcher.dispatchEvent("configAdded", { data: { name, config } });
   }
-  addPathGenerator(type, pathGenerator) {
-    !this.getPathGenerator(type) && this.pathGenerators.set(type, pathGenerator);
-  }
-  addPlugin(plugin) {
-    !this.getPlugin(plugin.id) && this.plugins.push(plugin);
-  }
-  addPreset(presetKey, options, override = false) {
-    (override || !this.getPreset(presetKey)) && this.presets.set(presetKey, options);
-  }
-  addShapeDrawer(types, drawer) {
-    executeOnSingleOrMultiple(types, (type) => {
-      !this.getShapeDrawer(type) && this.drawers.set(type, drawer);
+  async addEffect(effect, drawer, refresh = true) {
+    executeOnSingleOrMultiple(effect, (type) => {
+      !this.getEffectDrawer(type) && this.effectDrawers.set(type, drawer);
     });
+    await this.refresh(refresh);
   }
-  destroy(container) {
+  addEventListener(type, listener) {
+    this._eventDispatcher.addEventListener(type, listener);
+  }
+  async addInteractor(name, interactorInitializer, refresh = true) {
+    this._initializers.interactors.set(name, interactorInitializer);
+    await this.refresh(refresh);
+  }
+  async addMover(name, moverInitializer, refresh = true) {
+    this._initializers.movers.set(name, moverInitializer);
+    await this.refresh(refresh);
+  }
+  async addParticleUpdater(name, updaterInitializer, refresh = true) {
+    this._initializers.updaters.set(name, updaterInitializer);
+    await this.refresh(refresh);
+  }
+  async addPathGenerator(name, generator, refresh = true) {
+    !this.getPathGenerator(name) && this.pathGenerators.set(name, generator);
+    await this.refresh(refresh);
+  }
+  async addPlugin(plugin, refresh = true) {
+    !this.getPlugin(plugin.id) && this.plugins.push(plugin);
+    await this.refresh(refresh);
+  }
+  async addPreset(preset, options, override = false, refresh = true) {
+    (override || !this.getPreset(preset)) && this.presets.set(preset, options);
+    await this.refresh(refresh);
+  }
+  async addShape(shape, drawer, refresh = true) {
+    executeOnSingleOrMultiple(shape, (type) => {
+      !this.getShapeDrawer(type) && this.shapeDrawers.set(type, drawer);
+    });
+    await this.refresh(refresh);
+  }
+  clearPlugins(container) {
     this.updaters.delete(container);
     this.movers.delete(container);
     this.interactors.delete(container);
+  }
+  dispatchEvent(type, args) {
+    this._eventDispatcher.dispatchEvent(type, args);
+  }
+  dom() {
+    return this._domArray;
+  }
+  domItem(index) {
+    const dom = this.dom(), item = dom[index];
+    if (!item || item.destroyed) {
+      dom.splice(index, 1);
+      return;
+    }
+    return item;
   }
   getAvailablePlugins(container) {
     const res = /* @__PURE__ */ new Map();
@@ -4480,6 +4403,9 @@ class Plugins {
       plugin.needsPlugin(container.actualOptions) && res.set(plugin.id, plugin.getPlugin(container));
     }
     return res;
+  }
+  getEffectDrawer(type) {
+    return this.effectDrawers.get(type);
   }
   getInteractors(container, force = false) {
     return getItemsFromInitializer(container, this.interactors, this._initializers.interactors, force);
@@ -4497,149 +4423,16 @@ class Plugins {
     return this.presets.get(preset);
   }
   getShapeDrawer(type) {
-    return this.drawers.get(type);
+    return this.shapeDrawers.get(type);
+  }
+  getSupportedEffects() {
+    return this.effectDrawers.keys();
   }
   getSupportedShapes() {
-    return this.drawers.keys();
+    return this.shapeDrawers.keys();
   }
   getUpdaters(container, force = false) {
     return getItemsFromInitializer(container, this.updaters, this._initializers.updaters, force);
-  }
-  loadOptions(options, sourceOptions) {
-    for (const plugin of this.plugins) {
-      plugin.loadOptions(options, sourceOptions);
-    }
-  }
-  loadParticlesOptions(container, options, ...sourceOptions) {
-    const updaters = this.updaters.get(container);
-    if (!updaters) {
-      return;
-    }
-    for (const updater of updaters) {
-      updater.loadOptions && updater.loadOptions(options, ...sourceOptions);
-    }
-  }
-}
-async function getDataFromUrl(data) {
-  const url = itemFromSingleOrMultiple(data.url, data.index);
-  if (!url) {
-    return data.fallback;
-  }
-  const response = await fetch(url);
-  if (response.ok) {
-    return response.json();
-  }
-  getLogger().error(`${errorPrefix} ${response.status} while retrieving config file`);
-  return data.fallback;
-}
-function isParamsEmpty(params) {
-  return !params.id && !params.element && !params.url && !params.options;
-}
-function isParams(obj) {
-  return !isParamsEmpty(obj);
-}
-class Engine {
-  constructor() {
-    this._configs = /* @__PURE__ */ new Map();
-    this._domArray = [];
-    this._eventDispatcher = new EventDispatcher();
-    this._initialized = false;
-    this.plugins = new Plugins(this);
-  }
-  get configs() {
-    const res = {};
-    for (const [name, config] of this._configs) {
-      res[name] = config;
-    }
-    return res;
-  }
-  get version() {
-    return "2.12.0";
-  }
-  addConfig(nameOrConfig, config) {
-    if (isString(nameOrConfig)) {
-      if (config) {
-        config.name = nameOrConfig;
-        this._configs.set(nameOrConfig, config);
-      }
-    } else {
-      this._configs.set(nameOrConfig.name ?? "default", nameOrConfig);
-    }
-  }
-  addEventListener(type, listener) {
-    this._eventDispatcher.addEventListener(type, listener);
-  }
-  async addInteractor(name, interactorInitializer, refresh = true) {
-    this.plugins.addInteractor(name, interactorInitializer);
-    await this.refresh(refresh);
-  }
-  async addMover(name, moverInitializer, refresh = true) {
-    this.plugins.addParticleMover(name, moverInitializer);
-    await this.refresh(refresh);
-  }
-  async addParticleUpdater(name, updaterInitializer, refresh = true) {
-    this.plugins.addParticleUpdater(name, updaterInitializer);
-    await this.refresh(refresh);
-  }
-  async addPathGenerator(name, generator, refresh = true) {
-    this.plugins.addPathGenerator(name, generator);
-    await this.refresh(refresh);
-  }
-  async addPlugin(plugin, refresh = true) {
-    this.plugins.addPlugin(plugin);
-    await this.refresh(refresh);
-  }
-  async addPreset(preset, options, override = false, refresh = true) {
-    this.plugins.addPreset(preset, options, override);
-    await this.refresh(refresh);
-  }
-  async addShape(shape, drawer, initOrRefresh, afterEffectOrRefresh, destroyOrRefresh, refresh = true) {
-    let customDrawer;
-    let realRefresh = refresh, realInit, realAfterEffect, realDestroy;
-    if (isBoolean(initOrRefresh)) {
-      realRefresh = initOrRefresh;
-      realInit = void 0;
-    } else {
-      realInit = initOrRefresh;
-    }
-    if (isBoolean(afterEffectOrRefresh)) {
-      realRefresh = afterEffectOrRefresh;
-      realAfterEffect = void 0;
-    } else {
-      realAfterEffect = afterEffectOrRefresh;
-    }
-    if (isBoolean(destroyOrRefresh)) {
-      realRefresh = destroyOrRefresh;
-      realDestroy = void 0;
-    } else {
-      realDestroy = destroyOrRefresh;
-    }
-    if (isFunction(drawer)) {
-      customDrawer = {
-        afterEffect: realAfterEffect,
-        destroy: realDestroy,
-        draw: drawer,
-        init: realInit
-      };
-    } else {
-      customDrawer = drawer;
-    }
-    this.plugins.addShapeDrawer(shape, customDrawer);
-    await this.refresh(realRefresh);
-  }
-  dispatchEvent(type, args) {
-    this._eventDispatcher.dispatchEvent(type, args);
-  }
-  dom() {
-    return this._domArray;
-  }
-  domItem(index) {
-    const dom = this.dom(), item = dom[index];
-    if (!item || item.destroyed) {
-      dom.splice(index, 1);
-      return;
-    }
-    return item;
   }
   init() {
     if (this._initialized) {
@@ -4647,99 +4440,15 @@ class Engine {
     }
     this._initialized = true;
   }
-  async load(tagIdOrOptionsOrParams, options) {
-    return this.loadFromArray(tagIdOrOptionsOrParams, options);
-  }
-  async loadFromArray(tagIdOrOptionsOrParams, optionsOrIndex, index) {
-    let params;
-    if (!isParams(tagIdOrOptionsOrParams)) {
-      params = {};
-      if (isString(tagIdOrOptionsOrParams)) {
-        params.id = tagIdOrOptionsOrParams;
-      } else {
-        params.options = tagIdOrOptionsOrParams;
-      }
-      if (isNumber(optionsOrIndex)) {
-        params.index = optionsOrIndex;
-      } else {
-        params.options = optionsOrIndex ?? params.options;
-      }
-      params.index = index ?? params.index;
-    } else {
-      params = tagIdOrOptionsOrParams;
-    }
-    return this._loadParams(params);
-  }
-  async loadJSON(tagId, pathConfigJson, index) {
-    let url, id;
-    if (isNumber(pathConfigJson) || pathConfigJson === void 0) {
-      url = tagId;
-    } else {
-      id = tagId;
-      url = pathConfigJson;
-    }
-    return this._loadParams({ id, url, index });
-  }
-  async refresh(refresh = true) {
-    if (!refresh) {
-      return;
-    }
-    this.dom().forEach((t) => t.refresh());
-  }
-  removeEventListener(type, listener) {
-    this._eventDispatcher.removeEventListener(type, listener);
-  }
-  async set(id, element, options, index) {
-    const params = { index };
-    if (isString(id)) {
-      params.id = id;
-    } else {
-      params.element = id;
-    }
-    if (element instanceof HTMLElement) {
-      params.element = element;
-    } else {
-      params.options = element;
-    }
-    if (isNumber(options)) {
-      params.index = options;
-    } else {
-      params.options = options ?? params.options;
-    }
-    return this._loadParams(params);
-  }
-  async setJSON(id, element, pathConfigJson, index) {
-    const params = {};
-    if (id instanceof HTMLElement) {
-      params.element = id;
-      params.url = element;
-      params.index = pathConfigJson;
-    } else {
-      params.id = id;
-      params.element = element;
-      params.url = pathConfigJson;
-      params.index = index;
-    }
-    return this._loadParams(params);
-  }
-  setOnClickHandler(callback) {
-    const dom = this.dom();
-    if (!dom.length) {
-      throw new Error(`${errorPrefix} can only set click handlers after calling tsParticles.load()`);
-    }
-    for (const domItem of dom) {
-      domItem.addClickHandler(callback);
-    }
-  }
-  async _loadParams(params) {
-    const id = params.id ?? `tsparticles${Math.floor(getRandom() * 1e4)}`, { index, url } = params, options = url ? await getDataFromUrl({ fallback: params.options, url, index }) : params.options;
+  async load(params) {
+    const id = params.id ?? params.element?.id ?? `tsparticles${Math.floor(getRandom() * 1e4)}`, { index, url } = params, options = url ? await getDataFromUrl({ fallback: params.options, url, index }) : params.options;
     let domContainer = params.element ?? document.getElementById(id);
     if (!domContainer) {
       domContainer = document.createElement("div");
       domContainer.id = id;
       document.body.append(domContainer);
     }
-    const currentOptions = itemFromSingleOrMultiple(options, index), dom = this.dom(), oldIndex = dom.findIndex((v) => v.id === id);
+    const currentOptions = itemFromSingleOrMultiple(options, index), dom = this.dom(), oldIndex = dom.findIndex((v) => v.id.description === id);
     if (oldIndex >= 0) {
       const old = this.domItem(oldIndex);
       if (old && !old.destroyed) {
@@ -4777,6 +4486,38 @@ class Engine {
     newItem.canvas.loadCanvas(canvasEl);
     await newItem.start();
     return newItem;
+  }
+  loadOptions(options, sourceOptions) {
+    for (const plugin of this.plugins) {
+      plugin.loadOptions(options, sourceOptions);
+    }
+  }
+  loadParticlesOptions(container, options, ...sourceOptions) {
+    const updaters = this.updaters.get(container);
+    if (!updaters) {
+      return;
+    }
+    for (const updater of updaters) {
+      updater.loadOptions && updater.loadOptions(options, ...sourceOptions);
+    }
+  }
+  async refresh(refresh = true) {
+    if (!refresh) {
+      return;
+    }
+    this.dom().forEach((t) => t.refresh());
+  }
+  removeEventListener(type, listener) {
+    this._eventDispatcher.removeEventListener(type, listener);
+  }
+  setOnClickHandler(callback) {
+    const dom = this.dom();
+    if (!dom.length) {
+      throw new Error(`${errorPrefix} can only set click handlers after calling tsParticles.load()`);
+    }
+    for (const domItem of dom) {
+      domItem.addClickHandler(callback);
+    }
   }
 }
 class HslColorManager {
@@ -4871,1484 +4612,6 @@ const tsParticles = init();
 if (!isSsr()) {
   window.tsParticles = tsParticles;
 }
-class AbsorberSizeLimit {
-  constructor() {
-    this.radius = 0;
-    this.mass = 0;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.mass !== void 0) {
-      this.mass = data.mass;
-    }
-    if (data.radius !== void 0) {
-      this.radius = data.radius;
-    }
-  }
-}
-class AbsorberSize extends ValueWithRandom {
-  constructor() {
-    super();
-    this.density = 5;
-    this.value = 50;
-    this.limit = new AbsorberSizeLimit();
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    super.load(data);
-    if (data.density !== void 0) {
-      this.density = data.density;
-    }
-    if (isNumber(data.limit)) {
-      this.limit.radius = data.limit;
-    } else {
-      this.limit.load(data.limit);
-    }
-  }
-}
-class Absorber {
-  constructor() {
-    this.color = new OptionsColor();
-    this.color.value = "#000000";
-    this.draggable = false;
-    this.opacity = 1;
-    this.destroy = true;
-    this.orbits = false;
-    this.size = new AbsorberSize();
-  }
-  load(data) {
-    if (data === void 0) {
-      return;
-    }
-    if (data.color !== void 0) {
-      this.color = OptionsColor.create(this.color, data.color);
-    }
-    if (data.draggable !== void 0) {
-      this.draggable = data.draggable;
-    }
-    this.name = data.name;
-    if (data.opacity !== void 0) {
-      this.opacity = data.opacity;
-    }
-    if (data.position !== void 0) {
-      this.position = {};
-      if (data.position.x !== void 0) {
-        this.position.x = setRangeValue(data.position.x);
-      }
-      if (data.position.y !== void 0) {
-        this.position.y = setRangeValue(data.position.y);
-      }
-    }
-    if (data.size !== void 0) {
-      this.size.load(data.size);
-    }
-    if (data.destroy !== void 0) {
-      this.destroy = data.destroy;
-    }
-    if (data.orbits !== void 0) {
-      this.orbits = data.orbits;
-    }
-  }
-}
-class AbsorberInstance {
-  constructor(absorbers, container, options, position) {
-    this.absorbers = absorbers;
-    this.container = container;
-    this._calcPosition = () => {
-      const exactPosition = calcPositionOrRandomFromSizeRanged({
-        size: this.container.canvas.size,
-        position: this.options.position
-      });
-      return Vector.create(exactPosition.x, exactPosition.y);
-    };
-    this._updateParticlePosition = (particle, v) => {
-      if (particle.destroyed) {
-        return;
-      }
-      const container2 = this.container, canvasSize = container2.canvas.size;
-      if (particle.needsNewPosition) {
-        const newPosition = calcPositionOrRandomFromSize({ size: canvasSize });
-        particle.position.setTo(newPosition);
-        particle.velocity.setTo(particle.initialVelocity);
-        particle.absorberOrbit = void 0;
-        particle.needsNewPosition = false;
-      }
-      if (this.options.orbits) {
-        if (particle.absorberOrbit === void 0) {
-          particle.absorberOrbit = Vector.create(0, 0);
-          particle.absorberOrbit.length = getDistance(particle.getPosition(), this.position);
-          particle.absorberOrbit.angle = getRandom() * Math.PI * 2;
-        }
-        if (particle.absorberOrbit.length <= this.size && !this.options.destroy) {
-          const minSize = Math.min(canvasSize.width, canvasSize.height);
-          particle.absorberOrbit.length = minSize * (1 + (getRandom() * 0.2 - 0.1));
-        }
-        if (particle.absorberOrbitDirection === void 0) {
-          particle.absorberOrbitDirection = particle.velocity.x >= 0 ? "clockwise" : "counter-clockwise";
-        }
-        const orbitRadius = particle.absorberOrbit.length, orbitAngle = particle.absorberOrbit.angle, orbitDirection = particle.absorberOrbitDirection;
-        particle.velocity.setTo(Vector.origin);
-        const updateFunc = {
-          x: orbitDirection === "clockwise" ? Math.cos : Math.sin,
-          y: orbitDirection === "clockwise" ? Math.sin : Math.cos
-        };
-        particle.position.x = this.position.x + orbitRadius * updateFunc.x(orbitAngle);
-        particle.position.y = this.position.y + orbitRadius * updateFunc.y(orbitAngle);
-        particle.absorberOrbit.length -= v.length;
-        particle.absorberOrbit.angle += (particle.retina.moveSpeed ?? 0) * container2.retina.pixelRatio / 100 * container2.retina.reduceFactor;
-      } else {
-        const addV = Vector.origin;
-        addV.length = v.length;
-        addV.angle = v.angle;
-        particle.velocity.addTo(addV);
-      }
-    };
-    this.initialPosition = position ? Vector.create(position.x, position.y) : void 0;
-    if (options instanceof Absorber) {
-      this.options = options;
-    } else {
-      this.options = new Absorber();
-      this.options.load(options);
-    }
-    this.dragging = false;
-    this.name = this.options.name;
-    this.opacity = this.options.opacity;
-    this.size = getRangeValue(this.options.size.value) * container.retina.pixelRatio;
-    this.mass = this.size * this.options.size.density * container.retina.reduceFactor;
-    const limit = this.options.size.limit;
-    this.limit = {
-      radius: limit.radius * container.retina.pixelRatio * container.retina.reduceFactor,
-      mass: limit.mass
-    };
-    this.color = rangeColorToRgb(this.options.color) ?? {
-      b: 0,
-      g: 0,
-      r: 0
-    };
-    this.position = this.initialPosition?.copy() ?? this._calcPosition();
-  }
-  attract(particle) {
-    const container = this.container, options = this.options;
-    if (options.draggable) {
-      const mouse = container.interactivity.mouse;
-      if (mouse.clicking && mouse.downPosition) {
-        const mouseDist = getDistance(this.position, mouse.downPosition);
-        if (mouseDist <= this.size) {
-          this.dragging = true;
-        }
-      } else {
-        this.dragging = false;
-      }
-      if (this.dragging && mouse.position) {
-        this.position.x = mouse.position.x;
-        this.position.y = mouse.position.y;
-      }
-    }
-    const pos = particle.getPosition(), { dx, dy, distance } = getDistances(this.position, pos), v = Vector.create(dx, dy);
-    v.length = this.mass / Math.pow(distance, 2) * container.retina.reduceFactor;
-    if (distance < this.size + particle.getRadius()) {
-      const sizeFactor = particle.getRadius() * 0.033 * container.retina.pixelRatio;
-      if (this.size > particle.getRadius() && distance < this.size - particle.getRadius() || particle.absorberOrbit !== void 0 && particle.absorberOrbit.length < 0) {
-        if (options.destroy) {
-          particle.destroy();
-        } else {
-          particle.needsNewPosition = true;
-          this._updateParticlePosition(particle, v);
-        }
-      } else {
-        if (options.destroy) {
-          particle.size.value -= sizeFactor;
-        }
-        this._updateParticlePosition(particle, v);
-      }
-      if (this.limit.radius <= 0 || this.size < this.limit.radius) {
-        this.size += sizeFactor;
-      }
-      if (this.limit.mass <= 0 || this.mass < this.limit.mass) {
-        this.mass += sizeFactor * this.options.size.density * container.retina.reduceFactor;
-      }
-    } else {
-      this._updateParticlePosition(particle, v);
-    }
-  }
-  draw(context) {
-    context.translate(this.position.x, this.position.y);
-    context.beginPath();
-    context.arc(0, 0, this.size, 0, Math.PI * 2, false);
-    context.closePath();
-    context.fillStyle = getStyleFromRgb(this.color, this.opacity);
-    context.fill();
-  }
-  resize() {
-    const initialPosition = this.initialPosition;
-    this.position = initialPosition && isPointInside(initialPosition, this.container.canvas.size, Vector.origin) ? initialPosition : this._calcPosition();
-  }
-}
-class Absorbers {
-  constructor(container) {
-    this.container = container;
-    this.array = [];
-    this.absorbers = [];
-    this.interactivityAbsorbers = [];
-    container.getAbsorber = (idxOrName) => idxOrName === void 0 || isNumber(idxOrName) ? this.array[idxOrName || 0] : this.array.find((t) => t.name === idxOrName);
-    container.addAbsorber = (options, position) => this.addAbsorber(options, position);
-  }
-  addAbsorber(options, position) {
-    const absorber = new AbsorberInstance(this, this.container, options, position);
-    this.array.push(absorber);
-    return absorber;
-  }
-  draw(context) {
-    for (const absorber of this.array) {
-      absorber.draw(context);
-    }
-  }
-  handleClickMode(mode) {
-    const absorberOptions = this.absorbers, modeAbsorbers = this.interactivityAbsorbers;
-    if (mode === "absorber") {
-      const absorbersModeOptions = itemFromSingleOrMultiple(modeAbsorbers), absorbersOptions = absorbersModeOptions ?? itemFromSingleOrMultiple(absorberOptions), aPosition = this.container.interactivity.mouse.clickPosition;
-      this.addAbsorber(absorbersOptions, aPosition);
-    }
-  }
-  async init() {
-    this.absorbers = this.container.actualOptions.absorbers;
-    this.interactivityAbsorbers = this.container.actualOptions.interactivity.modes.absorbers;
-    executeOnSingleOrMultiple(this.absorbers, (absorber) => {
-      this.addAbsorber(absorber);
-    });
-  }
-  particleUpdate(particle) {
-    for (const absorber of this.array) {
-      absorber.attract(particle);
-      if (particle.destroyed) {
-        break;
-      }
-    }
-  }
-  removeAbsorber(absorber) {
-    const index = this.array.indexOf(absorber);
-    if (index >= 0) {
-      this.array.splice(index, 1);
-    }
-  }
-  resize() {
-    for (const absorber of this.array) {
-      absorber.resize();
-    }
-  }
-  stop() {
-    this.array = [];
-  }
-}
-class AbsorbersPlugin {
-  constructor() {
-    this.id = "absorbers";
-  }
-  getPlugin(container) {
-    return new Absorbers(container);
-  }
-  loadOptions(options, source) {
-    if (!this.needsPlugin(options) && !this.needsPlugin(source)) {
-      return;
-    }
-    if (source?.absorbers) {
-      options.absorbers = executeOnSingleOrMultiple(source.absorbers, (absorber) => {
-        const tmp = new Absorber();
-        tmp.load(absorber);
-        return tmp;
-      });
-    }
-    options.interactivity.modes.absorbers = executeOnSingleOrMultiple(source?.interactivity?.modes?.absorbers, (absorber) => {
-      const tmp = new Absorber();
-      tmp.load(absorber);
-      return tmp;
-    });
-  }
-  needsPlugin(options) {
-    if (!options) {
-      return false;
-    }
-    const absorbers = options.absorbers;
-    if (isArray(absorbers)) {
-      return !!absorbers.length;
-    } else if (absorbers) {
-      return true;
-    } else if (options.interactivity?.events?.onClick?.mode && isInArray("absorber", options.interactivity.events.onClick.mode)) {
-      return true;
-    }
-    return false;
-  }
-}
-async function loadAbsorbersPlugin(engine, refresh = true) {
-  await engine.addPlugin(new AbsorbersPlugin(), refresh);
-}
-class DestroyBounds {
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.bottom !== void 0) {
-      this.bottom = setRangeValue(data.bottom);
-    }
-    if (data.left !== void 0) {
-      this.left = setRangeValue(data.left);
-    }
-    if (data.right !== void 0) {
-      this.right = setRangeValue(data.right);
-    }
-    if (data.top !== void 0) {
-      this.top = setRangeValue(data.top);
-    }
-  }
-}
-class SplitFactor extends ValueWithRandom {
-  constructor() {
-    super();
-    this.value = 3;
-  }
-}
-class SplitRate extends ValueWithRandom {
-  constructor() {
-    super();
-    this.value = { min: 4, max: 9 };
-  }
-}
-class Split {
-  constructor() {
-    this.count = 1;
-    this.factor = new SplitFactor();
-    this.rate = new SplitRate();
-    this.sizeOffset = true;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.color !== void 0) {
-      this.color = OptionsColor.create(this.color, data.color);
-    }
-    if (data.count !== void 0) {
-      this.count = data.count;
-    }
-    this.factor.load(data.factor);
-    this.rate.load(data.rate);
-    this.particles = executeOnSingleOrMultiple(data.particles, (particles) => {
-      return deepExtend({}, particles);
-    });
-    if (data.sizeOffset !== void 0) {
-      this.sizeOffset = data.sizeOffset;
-    }
-    if (data.colorOffset) {
-      this.colorOffset = this.colorOffset ?? {};
-      if (data.colorOffset.h !== void 0) {
-        this.colorOffset.h = data.colorOffset.h;
-      }
-      if (data.colorOffset.s !== void 0) {
-        this.colorOffset.s = data.colorOffset.s;
-      }
-      if (data.colorOffset.l !== void 0) {
-        this.colorOffset.l = data.colorOffset.l;
-      }
-    }
-  }
-}
-class Destroy {
-  constructor() {
-    this.bounds = new DestroyBounds();
-    this.mode = "none";
-    this.split = new Split();
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.mode) {
-      this.mode = data.mode;
-    }
-    if (data.bounds) {
-      this.bounds.load(data.bounds);
-    }
-    this.split.load(data.split);
-  }
-}
-function addSplitParticle(engine, container, parent, splitParticlesOptions) {
-  const destroyOptions = parent.options.destroy;
-  if (!destroyOptions) {
-    return;
-  }
-  const splitOptions = destroyOptions.split, options = loadParticlesOptions(engine, container, parent.options), factor = getValue(splitOptions.factor), parentColor = parent.getFillColor();
-  if (splitOptions.color) {
-    options.color.load(splitOptions.color);
-  } else if (splitOptions.colorOffset && parentColor) {
-    options.color.load({
-      value: {
-        hsl: {
-          h: parentColor.h + getRangeValue(splitOptions.colorOffset.h ?? 0),
-          s: parentColor.s + getRangeValue(splitOptions.colorOffset.s ?? 0),
-          l: parentColor.l + getRangeValue(splitOptions.colorOffset.l ?? 0)
-        }
-      }
-    });
-  } else {
-    options.color.load({
-      value: {
-        hsl: parent.getFillColor()
-      }
-    });
-  }
-  options.move.load({
-    center: {
-      x: parent.position.x,
-      y: parent.position.y,
-      mode: "precise"
-    }
-  });
-  if (isNumber(options.size.value)) {
-    options.size.value /= factor;
-  } else {
-    options.size.value.min /= factor;
-    options.size.value.max /= factor;
-  }
-  options.load(splitParticlesOptions);
-  const offset = splitOptions.sizeOffset ? setRangeValue(-parent.size.value, parent.size.value) : 0, position = {
-    x: parent.position.x + randomInRange(offset),
-    y: parent.position.y + randomInRange(offset)
-  };
-  return container.particles.addParticle(position, options, parent.group, (particle) => {
-    if (particle.size.value < 0.5) {
-      return false;
-    }
-    particle.velocity.length = randomInRange(setRangeValue(parent.velocity.length, particle.velocity.length));
-    particle.splitCount = (parent.splitCount ?? 0) + 1;
-    particle.unbreakable = true;
-    setTimeout(() => {
-      particle.unbreakable = false;
-    }, 500);
-    return true;
-  });
-}
-function split(engine, container, particle) {
-  const destroyOptions = particle.options.destroy;
-  if (!destroyOptions) {
-    return;
-  }
-  const splitOptions = destroyOptions.split;
-  if (splitOptions.count >= 0 && (particle.splitCount === void 0 || particle.splitCount++ > splitOptions.count)) {
-    return;
-  }
-  const rate = getValue(splitOptions.rate), particlesSplitOptions = itemFromSingleOrMultiple(splitOptions.particles);
-  for (let i = 0; i < rate; i++) {
-    addSplitParticle(engine, container, particle, particlesSplitOptions);
-  }
-}
-class DestroyUpdater {
-  constructor(engine, container) {
-    this.engine = engine;
-    this.container = container;
-  }
-  init(particle) {
-    const container = this.container, particlesOptions = particle.options, destroyOptions = particlesOptions.destroy;
-    if (!destroyOptions) {
-      return;
-    }
-    particle.splitCount = 0;
-    const destroyBoundsOptions = destroyOptions.bounds;
-    if (!particle.destroyBounds) {
-      particle.destroyBounds = {};
-    }
-    const { bottom, left, right, top } = destroyBoundsOptions, { destroyBounds } = particle, canvasSize = container.canvas.size;
-    if (bottom) {
-      destroyBounds.bottom = getRangeValue(bottom) * canvasSize.height / 100;
-    }
-    if (left) {
-      destroyBounds.left = getRangeValue(left) * canvasSize.width / 100;
-    }
-    if (right) {
-      destroyBounds.right = getRangeValue(right) * canvasSize.width / 100;
-    }
-    if (top) {
-      destroyBounds.top = getRangeValue(top) * canvasSize.height / 100;
-    }
-  }
-  isEnabled(particle) {
-    return !particle.destroyed;
-  }
-  loadOptions(options, ...sources) {
-    if (!options.destroy) {
-      options.destroy = new Destroy();
-    }
-    for (const source of sources) {
-      options.destroy.load(source?.destroy);
-    }
-  }
-  particleDestroyed(particle, override) {
-    if (override) {
-      return;
-    }
-    const destroyOptions = particle.options.destroy;
-    if (destroyOptions && destroyOptions.mode === "split") {
-      split(this.engine, this.container, particle);
-    }
-  }
-  update(particle) {
-    if (!this.isEnabled(particle)) {
-      return;
-    }
-    const position = particle.getPosition(), bounds = particle.destroyBounds;
-    if (!bounds) {
-      return;
-    }
-    if (bounds.bottom !== void 0 && position.y >= bounds.bottom || bounds.left !== void 0 && position.x <= bounds.left || bounds.right !== void 0 && position.x >= bounds.right || bounds.top !== void 0 && position.y <= bounds.top) {
-      particle.destroy();
-    }
-  }
-}
-async function loadDestroyUpdater(engine, refresh = true) {
-  await engine.addParticleUpdater("destroy", (container) => new DestroyUpdater(engine, container), refresh);
-}
-class CircleShape {
-  randomPosition(position, size, fill) {
-    const generateTheta = (x, y) => {
-      const u = getRandom() / 4, theta = Math.atan(y / x * Math.tan(2 * Math.PI * u)), v = getRandom();
-      if (v < 0.25) {
-        return theta;
-      } else if (v < 0.5) {
-        return Math.PI - theta;
-      } else if (v < 0.75) {
-        return Math.PI + theta;
-      } else {
-        return -theta;
-      }
-    }, radius = (x, y, theta) => x * y / Math.sqrt((y * Math.cos(theta)) ** 2 + (x * Math.sin(theta)) ** 2), [a, b] = [size.width / 2, size.height / 2], randomTheta = generateTheta(a, b), maxRadius = radius(a, b, randomTheta), randomRadius = fill ? maxRadius * Math.sqrt(getRandom()) : maxRadius;
-    return {
-      x: position.x + randomRadius * Math.cos(randomTheta),
-      y: position.y + randomRadius * Math.sin(randomTheta)
-    };
-  }
-}
-class EmitterLife {
-  constructor() {
-    this.wait = false;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.count !== void 0) {
-      this.count = data.count;
-    }
-    if (data.delay !== void 0) {
-      this.delay = setRangeValue(data.delay);
-    }
-    if (data.duration !== void 0) {
-      this.duration = setRangeValue(data.duration);
-    }
-    if (data.wait !== void 0) {
-      this.wait = data.wait;
-    }
-  }
-}
-class EmitterRate {
-  constructor() {
-    this.quantity = 1;
-    this.delay = 0.1;
-  }
-  load(data) {
-    if (data === void 0) {
-      return;
-    }
-    if (data.quantity !== void 0) {
-      this.quantity = setRangeValue(data.quantity);
-    }
-    if (data.delay !== void 0) {
-      this.delay = setRangeValue(data.delay);
-    }
-  }
-}
-class EmitterSize {
-  constructor() {
-    this.mode = "percent";
-    this.height = 0;
-    this.width = 0;
-  }
-  load(data) {
-    if (data === void 0) {
-      return;
-    }
-    if (data.mode !== void 0) {
-      this.mode = data.mode;
-    }
-    if (data.height !== void 0) {
-      this.height = data.height;
-    }
-    if (data.width !== void 0) {
-      this.width = data.width;
-    }
-  }
-}
-class Emitter {
-  constructor() {
-    this.autoPlay = true;
-    this.fill = true;
-    this.life = new EmitterLife();
-    this.rate = new EmitterRate();
-    this.shape = "square";
-    this.startCount = 0;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.autoPlay !== void 0) {
-      this.autoPlay = data.autoPlay;
-    }
-    if (data.size !== void 0) {
-      if (!this.size) {
-        this.size = new EmitterSize();
-      }
-      this.size.load(data.size);
-    }
-    if (data.direction !== void 0) {
-      this.direction = data.direction;
-    }
-    this.domId = data.domId;
-    if (data.fill !== void 0) {
-      this.fill = data.fill;
-    }
-    this.life.load(data.life);
-    this.name = data.name;
-    this.particles = executeOnSingleOrMultiple(data.particles, (particles) => {
-      return deepExtend({}, particles);
-    });
-    this.rate.load(data.rate);
-    if (data.shape !== void 0) {
-      this.shape = data.shape;
-    }
-    if (data.position !== void 0) {
-      this.position = {};
-      if (data.position.x !== void 0) {
-        this.position.x = setRangeValue(data.position.x);
-      }
-      if (data.position.y !== void 0) {
-        this.position.y = setRangeValue(data.position.y);
-      }
-    }
-    if (data.spawnColor !== void 0) {
-      if (this.spawnColor === void 0) {
-        this.spawnColor = new AnimatableColor();
-      }
-      this.spawnColor.load(data.spawnColor);
-    }
-    if (data.startCount !== void 0) {
-      this.startCount = data.startCount;
-    }
-  }
-}
-class EmitterInstance {
-  constructor(engine, emitters, container, options, position) {
-    this.emitters = emitters;
-    this.container = container;
-    this._calcPosition = () => {
-      return calcPositionOrRandomFromSizeRanged({
-        size: this.container.canvas.size,
-        position: this.options.position
-      });
-    };
-    this._destroy = () => {
-      this.emitters.removeEmitter(this);
-      this._engine.dispatchEvent("emitterDestroyed", {
-        container: this.container,
-        data: {
-          emitter: this
-        }
-      });
-    };
-    this._emit = () => {
-      if (this._paused) {
-        return;
-      }
-      const quantity = getRangeValue(this.options.rate.quantity);
-      this._emitParticles(quantity);
-    };
-    this._emitParticles = (quantity) => {
-      const position2 = this.getPosition(), size = this.getSize(), singleParticlesOptions = itemFromSingleOrMultiple(this._particlesOptions);
-      for (let i = 0; i < quantity; i++) {
-        const particlesOptions2 = deepExtend({}, singleParticlesOptions);
-        if (this.spawnColor) {
-          const hslAnimation = this.options.spawnColor?.animation;
-          if (hslAnimation) {
-            this.spawnColor.h = this._setColorAnimation(hslAnimation.h, this.spawnColor.h, 360);
-            this.spawnColor.s = this._setColorAnimation(hslAnimation.s, this.spawnColor.s, 100);
-            this.spawnColor.l = this._setColorAnimation(hslAnimation.l, this.spawnColor.l, 100);
-          }
-          if (!particlesOptions2.color) {
-            particlesOptions2.color = {
-              value: this.spawnColor
-            };
-          } else {
-            particlesOptions2.color.value = this.spawnColor;
-          }
-        }
-        if (!position2) {
-          return;
-        }
-        const pPosition = this._shape?.randomPosition(position2, size, this.fill) ?? position2;
-        this.container.particles.addParticle(pPosition, particlesOptions2);
-      }
-    };
-    this._prepareToDie = () => {
-      if (this._paused) {
-        return;
-      }
-      const duration = this.options.life?.duration !== void 0 ? getRangeValue(this.options.life.duration) : void 0;
-      if (this.container.retina.reduceFactor && (this._lifeCount > 0 || this._immortal) && duration !== void 0 && duration > 0) {
-        this._duration = duration * 1e3;
-      }
-    };
-    this._setColorAnimation = (animation, initValue, maxValue) => {
-      const container2 = this.container;
-      if (!animation.enable) {
-        return initValue;
-      }
-      const colorOffset = randomInRange(animation.offset), delay = getRangeValue(this.options.rate.delay), emitFactor = 1e3 * delay / container2.retina.reduceFactor, colorSpeed = getRangeValue(animation.speed ?? 0);
-      return (initValue + colorSpeed * container2.fpsLimit / emitFactor + colorOffset * 3.6) % maxValue;
-    };
-    this._engine = engine;
-    this._currentDuration = 0;
-    this._currentEmitDelay = 0;
-    this._currentSpawnDelay = 0;
-    this._initialPosition = position;
-    if (options instanceof Emitter) {
-      this.options = options;
-    } else {
-      this.options = new Emitter();
-      this.options.load(options);
-    }
-    this._spawnDelay = getRangeValue(this.options.life.delay ?? 0) * 1e3 / this.container.retina.reduceFactor;
-    this.position = this._initialPosition ?? this._calcPosition();
-    this.name = this.options.name;
-    this._shape = this._engine.emitterShapeManager?.getShape(this.options.shape);
-    this.fill = this.options.fill;
-    this._firstSpawn = !this.options.life.wait;
-    this._startParticlesAdded = false;
-    let particlesOptions = deepExtend({}, this.options.particles);
-    particlesOptions ??= {};
-    particlesOptions.move ??= {};
-    particlesOptions.move.direction ??= this.options.direction;
-    if (this.options.spawnColor) {
-      this.spawnColor = rangeColorToHsl(this.options.spawnColor);
-    }
-    this._paused = !this.options.autoPlay;
-    this._particlesOptions = particlesOptions;
-    this.size = this.options.size ?? (() => {
-      const size = new EmitterSize();
-      size.load({
-        height: 0,
-        mode: "percent",
-        width: 0
-      });
-      return size;
-    })();
-    this._lifeCount = this.options.life.count ?? -1;
-    this._immortal = this._lifeCount <= 0;
-    this._engine.dispatchEvent("emitterCreated", {
-      container,
-      data: {
-        emitter: this
-      }
-    });
-    this.play();
-  }
-  externalPause() {
-    this._paused = true;
-    this.pause();
-  }
-  externalPlay() {
-    this._paused = false;
-    this.play();
-  }
-  getPosition() {
-    if (this.options.domId) {
-      const container = this.container, element = document.getElementById(this.options.domId);
-      if (element) {
-        const elRect = element.getBoundingClientRect();
-        return {
-          x: (elRect.x + elRect.width / 2) * container.retina.pixelRatio,
-          y: (elRect.y + elRect.height / 2) * container.retina.pixelRatio
-        };
-      }
-    }
-    return this.position;
-  }
-  getSize() {
-    const container = this.container;
-    if (this.options.domId) {
-      const element = document.getElementById(this.options.domId);
-      if (element) {
-        const elRect = element.getBoundingClientRect();
-        return {
-          width: elRect.width * container.retina.pixelRatio,
-          height: elRect.height * container.retina.pixelRatio
-        };
-      }
-    }
-    return getSize(this.size, container.canvas.size);
-  }
-  pause() {
-    if (this._paused) {
-      return;
-    }
-    delete this._emitDelay;
-  }
-  play() {
-    if (this._paused) {
-      return;
-    }
-    if (!(this.container.retina.reduceFactor && (this._lifeCount > 0 || this._immortal || !this.options.life.count) && (this._firstSpawn || this._currentSpawnDelay >= (this._spawnDelay ?? 0)))) {
-      return;
-    }
-    if (this._emitDelay === void 0) {
-      const delay = getRangeValue(this.options.rate.delay);
-      this._emitDelay = 1e3 * delay / this.container.retina.reduceFactor;
-    }
-    if (this._lifeCount > 0 || this._immortal) {
-      this._prepareToDie();
-    }
-  }
-  resize() {
-    const initialPosition = this._initialPosition;
-    this.position = initialPosition && isPointInside(initialPosition, this.container.canvas.size, Vector.origin) ? initialPosition : this._calcPosition();
-  }
-  update(delta) {
-    if (this._paused) {
-      return;
-    }
-    if (this._firstSpawn) {
-      this._firstSpawn = false;
-      this._currentSpawnDelay = this._spawnDelay ?? 0;
-      this._currentEmitDelay = this._emitDelay ?? 0;
-    }
-    if (!this._startParticlesAdded) {
-      this._startParticlesAdded = true;
-      this._emitParticles(this.options.startCount);
-    }
-    if (this._duration !== void 0) {
-      this._currentDuration += delta.value;
-      if (this._currentDuration >= this._duration) {
-        this.pause();
-        if (this._spawnDelay !== void 0) {
-          delete this._spawnDelay;
-        }
-        if (!this._immortal) {
-          this._lifeCount--;
-        }
-        if (this._lifeCount > 0 || this._immortal) {
-          this.position = this._calcPosition();
-          this._spawnDelay = getRangeValue(this.options.life.delay ?? 0) * 1e3 / this.container.retina.reduceFactor;
-        } else {
-          this._destroy();
-        }
-        this._currentDuration -= this._duration;
-        delete this._duration;
-      }
-    }
-    if (this._spawnDelay !== void 0) {
-      this._currentSpawnDelay += delta.value;
-      if (this._currentSpawnDelay >= this._spawnDelay) {
-        this._engine.dispatchEvent("emitterPlay", {
-          container: this.container
-        });
-        this.play();
-        this._currentSpawnDelay -= this._currentSpawnDelay;
-        delete this._spawnDelay;
-      }
-    }
-    if (this._emitDelay !== void 0) {
-      this._currentEmitDelay += delta.value;
-      if (this._currentEmitDelay >= this._emitDelay) {
-        this._emit();
-        this._currentEmitDelay -= this._emitDelay;
-      }
-    }
-  }
-}
-class Emitters {
-  constructor(engine, container) {
-    this.container = container;
-    this._engine = engine;
-    this.array = [];
-    this.emitters = [];
-    this.interactivityEmitters = {
-      random: {
-        count: 1,
-        enable: false
-      },
-      value: []
-    };
-    container.getEmitter = (idxOrName) => idxOrName === void 0 || isNumber(idxOrName) ? this.array[idxOrName || 0] : this.array.find((t) => t.name === idxOrName);
-    container.addEmitter = (options, position) => this.addEmitter(options, position);
-    container.removeEmitter = (idxOrName) => {
-      const emitter = container.getEmitter(idxOrName);
-      if (emitter) {
-        this.removeEmitter(emitter);
-      }
-    };
-    container.playEmitter = (idxOrName) => {
-      const emitter = container.getEmitter(idxOrName);
-      if (emitter) {
-        emitter.externalPlay();
-      }
-    };
-    container.pauseEmitter = (idxOrName) => {
-      const emitter = container.getEmitter(idxOrName);
-      if (emitter) {
-        emitter.externalPause();
-      }
-    };
-  }
-  addEmitter(options, position) {
-    const emitterOptions = new Emitter();
-    emitterOptions.load(options);
-    const emitter = new EmitterInstance(this._engine, this, this.container, emitterOptions, position);
-    this.array.push(emitter);
-    return emitter;
-  }
-  handleClickMode(mode) {
-    const emitterOptions = this.emitters, modeEmitters = this.interactivityEmitters;
-    if (mode !== "emitter") {
-      return;
-    }
-    let emittersModeOptions;
-    if (modeEmitters && isArray(modeEmitters.value)) {
-      if (modeEmitters.value.length > 0 && modeEmitters.random.enable) {
-        emittersModeOptions = [];
-        const usedIndexes = [];
-        for (let i = 0; i < modeEmitters.random.count; i++) {
-          const idx = arrayRandomIndex(modeEmitters.value);
-          if (usedIndexes.includes(idx) && usedIndexes.length < modeEmitters.value.length) {
-            i--;
-            continue;
-          }
-          usedIndexes.push(idx);
-          emittersModeOptions.push(itemFromArray(modeEmitters.value, idx));
-        }
-      } else {
-        emittersModeOptions = modeEmitters.value;
-      }
-    } else {
-      emittersModeOptions = modeEmitters?.value;
-    }
-    const emittersOptions = emittersModeOptions ?? emitterOptions, ePosition = this.container.interactivity.mouse.clickPosition;
-    executeOnSingleOrMultiple(emittersOptions, (emitter) => {
-      this.addEmitter(emitter, ePosition);
-    });
-  }
-  async init() {
-    this.emitters = this.container.actualOptions.emitters;
-    this.interactivityEmitters = this.container.actualOptions.interactivity.modes.emitters;
-    if (!this.emitters) {
-      return;
-    }
-    if (isArray(this.emitters)) {
-      for (const emitterOptions of this.emitters) {
-        this.addEmitter(emitterOptions);
-      }
-    } else {
-      this.addEmitter(this.emitters);
-    }
-  }
-  pause() {
-    for (const emitter of this.array) {
-      emitter.pause();
-    }
-  }
-  play() {
-    for (const emitter of this.array) {
-      emitter.play();
-    }
-  }
-  removeEmitter(emitter) {
-    const index = this.array.indexOf(emitter);
-    if (index >= 0) {
-      this.array.splice(index, 1);
-    }
-  }
-  resize() {
-    for (const emitter of this.array) {
-      emitter.resize();
-    }
-  }
-  stop() {
-    this.array = [];
-  }
-  update(delta) {
-    for (const emitter of this.array) {
-      emitter.update(delta);
-    }
-  }
-}
-const shapes = /* @__PURE__ */ new Map();
-class ShapeManager {
-  constructor(engine) {
-    this._engine = engine;
-  }
-  addShape(name, drawer) {
-    if (!this.getShape(name)) {
-      shapes.set(name, drawer);
-    }
-  }
-  getShape(name) {
-    return shapes.get(name);
-  }
-  getSupportedShapes() {
-    return shapes.keys();
-  }
-}
-function randomSquareCoordinate(position, offset) {
-  return position + offset * (getRandom() - 0.5);
-}
-class SquareShape {
-  randomPosition(position, size, fill) {
-    if (fill) {
-      return {
-        x: randomSquareCoordinate(position.x, size.width),
-        y: randomSquareCoordinate(position.y, size.height)
-      };
-    } else {
-      const halfW = size.width / 2, halfH = size.height / 2, side = Math.floor(getRandom() * 4), v = (getRandom() - 0.5) * 2;
-      switch (side) {
-        case 0:
-          return {
-            x: position.x + v * halfW,
-            y: position.y - halfH
-          };
-        case 1:
-          return {
-            x: position.x - halfW,
-            y: position.y + v * halfH
-          };
-        case 2:
-          return {
-            x: position.x + v * halfW,
-            y: position.y + halfH
-          };
-        case 3:
-        default:
-          return {
-            x: position.x + halfW,
-            y: position.y + v * halfH
-          };
-      }
-    }
-  }
-}
-class EmittersPlugin {
-  constructor(engine) {
-    this._engine = engine;
-    this.id = "emitters";
-  }
-  getPlugin(container) {
-    return new Emitters(this._engine, container);
-  }
-  loadOptions(options, source) {
-    if (!this.needsPlugin(options) && !this.needsPlugin(source)) {
-      return;
-    }
-    if (source?.emitters) {
-      options.emitters = executeOnSingleOrMultiple(source.emitters, (emitter) => {
-        const tmp = new Emitter();
-        tmp.load(emitter);
-        return tmp;
-      });
-    }
-    const interactivityEmitters = source?.interactivity?.modes?.emitters;
-    if (interactivityEmitters) {
-      if (isArray(interactivityEmitters)) {
-        options.interactivity.modes.emitters = {
-          random: {
-            count: 1,
-            enable: true
-          },
-          value: interactivityEmitters.map((s) => {
-            const tmp = new Emitter();
-            tmp.load(s);
-            return tmp;
-          })
-        };
-      } else {
-        const emitterMode = interactivityEmitters;
-        if (emitterMode.value !== void 0) {
-          if (isArray(emitterMode.value)) {
-            options.interactivity.modes.emitters = {
-              random: {
-                count: emitterMode.random.count ?? 1,
-                enable: emitterMode.random.enable ?? false
-              },
-              value: emitterMode.value.map((s) => {
-                const tmp = new Emitter();
-                tmp.load(s);
-                return tmp;
-              })
-            };
-          } else {
-            const tmp = new Emitter();
-            tmp.load(emitterMode.value);
-            options.interactivity.modes.emitters = {
-              random: {
-                count: emitterMode.random.count ?? 1,
-                enable: emitterMode.random.enable ?? false
-              },
-              value: tmp
-            };
-          }
-        } else {
-          const emitterOptions = options.interactivity.modes.emitters = {
-            random: {
-              count: 1,
-              enable: false
-            },
-            value: new Emitter()
-          };
-          emitterOptions.value.load(interactivityEmitters);
-        }
-      }
-    }
-  }
-  needsPlugin(options) {
-    if (!options) {
-      return false;
-    }
-    const emitters = options.emitters;
-    return isArray(emitters) && !!emitters.length || emitters !== void 0 || !!options.interactivity?.events?.onClick?.mode && isInArray("emitter", options.interactivity.events.onClick.mode);
-  }
-}
-async function loadEmittersPlugin(engine, refresh = true) {
-  if (!engine.emitterShapeManager) {
-    engine.emitterShapeManager = new ShapeManager(engine);
-  }
-  if (!engine.addEmitterShape) {
-    engine.addEmitterShape = (name, shape) => {
-      engine.emitterShapeManager?.addShape(name, shape);
-    };
-  }
-  const plugin = new EmittersPlugin(engine);
-  await engine.addPlugin(plugin, refresh);
-  engine.addEmitterShape("circle", new CircleShape());
-  engine.addEmitterShape("square", new SquareShape());
-}
-class Trail {
-  constructor() {
-    this.delay = 1;
-    this.pauseOnStop = false;
-    this.quantity = 1;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.delay !== void 0) {
-      this.delay = data.delay;
-    }
-    if (data.quantity !== void 0) {
-      this.quantity = data.quantity;
-    }
-    if (data.particles !== void 0) {
-      this.particles = deepExtend({}, data.particles);
-    }
-    if (data.pauseOnStop !== void 0) {
-      this.pauseOnStop = data.pauseOnStop;
-    }
-  }
-}
-class TrailMaker extends ExternalInteractorBase {
-  constructor(container) {
-    super(container);
-    this._delay = 0;
-  }
-  clear() {
-  }
-  init() {
-  }
-  async interact(delta) {
-    const container = this.container, { interactivity } = container;
-    if (!container.retina.reduceFactor) {
-      return;
-    }
-    const options = container.actualOptions, trailOptions = options.interactivity.modes.trail;
-    if (!trailOptions) {
-      return;
-    }
-    const optDelay = trailOptions.delay * 1e3 / this.container.retina.reduceFactor;
-    if (this._delay < optDelay) {
-      this._delay += delta.value;
-    }
-    if (this._delay < optDelay) {
-      return;
-    }
-    const canEmit = !(trailOptions.pauseOnStop && (interactivity.mouse.position === this._lastPosition || interactivity.mouse.position?.x === this._lastPosition?.x && interactivity.mouse.position?.y === this._lastPosition?.y));
-    const mousePos = container.interactivity.mouse.position;
-    if (mousePos) {
-      this._lastPosition = { ...mousePos };
-    } else {
-      delete this._lastPosition;
-    }
-    if (canEmit) {
-      container.particles.push(trailOptions.quantity, container.interactivity.mouse, trailOptions.particles);
-    }
-    this._delay -= optDelay;
-  }
-  isEnabled(particle) {
-    const container = this.container, options = container.actualOptions, mouse = container.interactivity.mouse, events = (particle?.interactivity ?? options.interactivity).events;
-    return mouse.clicking && mouse.inside && !!mouse.position && isInArray("trail", events.onClick.mode) || mouse.inside && !!mouse.position && isInArray("trail", events.onHover.mode);
-  }
-  loadModeOptions(options, ...sources) {
-    if (!options.trail) {
-      options.trail = new Trail();
-    }
-    for (const source of sources) {
-      options.trail.load(source?.trail);
-    }
-  }
-  reset() {
-  }
-}
-async function loadExternalTrailInteraction(engine, refresh = true) {
-  await engine.addInteractor("externalTrail", (container) => new TrailMaker(container), refresh);
-}
-function initParticle(particle) {
-  const rollOpt = particle.options.roll;
-  if (!rollOpt?.enable) {
-    particle.roll = {
-      enable: false,
-      horizontal: false,
-      vertical: false,
-      angle: 0,
-      speed: 0
-    };
-    return;
-  }
-  particle.roll = {
-    enable: rollOpt.enable,
-    horizontal: rollOpt.mode === "horizontal" || rollOpt.mode === "both",
-    vertical: rollOpt.mode === "vertical" || rollOpt.mode === "both",
-    angle: getRandom() * Math.PI * 2,
-    speed: getRangeValue(rollOpt.speed) / 360
-  };
-  if (rollOpt.backColor) {
-    particle.backColor = rangeColorToHsl(rollOpt.backColor);
-  } else if (rollOpt.darken.enable && rollOpt.enlighten.enable) {
-    const alterType = getRandom() >= 0.5 ? "darken" : "enlighten";
-    particle.roll.alter = {
-      type: alterType,
-      value: getRangeValue(alterType === "darken" ? rollOpt.darken.value : rollOpt.enlighten.value)
-    };
-  } else if (rollOpt.darken.enable) {
-    particle.roll.alter = {
-      type: "darken",
-      value: getRangeValue(rollOpt.darken.value)
-    };
-  } else if (rollOpt.enlighten.enable) {
-    particle.roll.alter = {
-      type: "enlighten",
-      value: getRangeValue(rollOpt.enlighten.value)
-    };
-  }
-}
-function updateRoll(particle, delta) {
-  const roll = particle.options.roll, data = particle.roll;
-  if (!data || !roll?.enable) {
-    return;
-  }
-  const speed = data.speed * delta.factor, max = 2 * Math.PI;
-  data.angle += speed;
-  if (data.angle > max) {
-    data.angle -= max;
-  }
-}
-class RollLight {
-  constructor() {
-    this.enable = false;
-    this.value = 0;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.enable !== void 0) {
-      this.enable = data.enable;
-    }
-    if (data.value !== void 0) {
-      this.value = setRangeValue(data.value);
-    }
-  }
-}
-class Roll {
-  constructor() {
-    this.darken = new RollLight();
-    this.enable = false;
-    this.enlighten = new RollLight();
-    this.mode = "vertical";
-    this.speed = 25;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.backColor !== void 0) {
-      this.backColor = OptionsColor.create(this.backColor, data.backColor);
-    }
-    this.darken.load(data.darken);
-    if (data.enable !== void 0) {
-      this.enable = data.enable;
-    }
-    this.enlighten.load(data.enlighten);
-    if (data.mode !== void 0) {
-      this.mode = data.mode;
-    }
-    if (data.speed !== void 0) {
-      this.speed = setRangeValue(data.speed);
-    }
-  }
-}
-class RollUpdater {
-  getTransformValues(particle) {
-    const roll = particle.roll?.enable && particle.roll, rollHorizontal = roll && roll.horizontal, rollVertical = roll && roll.vertical;
-    return {
-      a: rollHorizontal ? Math.cos(roll.angle) : void 0,
-      d: rollVertical ? Math.sin(roll.angle) : void 0
-    };
-  }
-  init(particle) {
-    initParticle(particle);
-  }
-  isEnabled(particle) {
-    const roll = particle.options.roll;
-    return !particle.destroyed && !particle.spawning && !!roll?.enable;
-  }
-  loadOptions(options, ...sources) {
-    if (!options.roll) {
-      options.roll = new Roll();
-    }
-    for (const source of sources) {
-      options.roll.load(source?.roll);
-    }
-  }
-  update(particle, delta) {
-    if (!this.isEnabled(particle)) {
-      return;
-    }
-    updateRoll(particle, delta);
-  }
-}
-async function loadRollUpdater(engine, refresh = true) {
-  await engine.addParticleUpdater("roll", () => new RollUpdater(), refresh);
-}
-let Particles$1 = class Particles2 {
-  static init(options) {
-    const particles = new Particles2(), selector = options.selector;
-    if (!selector) {
-      throw new Error("No selector provided");
-    }
-    const el = document.querySelector(selector);
-    if (!el) {
-      throw new Error("No element found for selector");
-    }
-    tsParticles.set(selector.replace(".", "").replace("!", ""), el, {
-      fullScreen: {
-        enable: false
-      },
-      particles: {
-        color: {
-          value: options.color ?? "!000000"
-        },
-        links: {
-          color: "random",
-          distance: options.minDistance ?? 120,
-          enable: options.connectParticles ?? false
-        },
-        move: {
-          enable: true,
-          speed: options.speed ?? 0.5
-        },
-        number: {
-          value: options.maxParticles ?? 100
-        },
-        size: {
-          value: { min: 1, max: options.sizeVariations ?? 3 }
-        }
-      },
-      responsive: options.responsive?.map((responsive) => ({
-        maxWidth: responsive.breakpoint,
-        options: {
-          particles: {
-            color: {
-              value: responsive.options?.color
-            },
-            links: {
-              distance: responsive.options?.minDistance,
-              enable: responsive.options?.connectParticles
-            },
-            number: {
-              value: options.maxParticles
-            },
-            move: {
-              enable: true,
-              speed: responsive.options?.speed
-            },
-            size: {
-              value: responsive.options?.sizeVariations
-            }
-          }
-        }
-      }))
-    }).then((container) => {
-      particles._container = container;
-    });
-    return particles;
-  }
-  destroy() {
-    const container = this._container;
-    container && container.destroy();
-  }
-  pauseAnimation() {
-    const container = this._container;
-    container && container.pause();
-  }
-  resumeAnimation() {
-    const container = this._container;
-    container && container.play();
-  }
-};
-const initParticlesJS = (engine) => {
-  const particlesJS = (tagId, options) => {
-    return engine.load(tagId, options);
-  };
-  particlesJS.load = (tagId, pathConfigJson, callback) => {
-    engine.loadJSON(tagId, pathConfigJson).then((container) => {
-      if (container) {
-        callback(container);
-      }
-    }).catch(() => {
-      callback(void 0);
-    });
-  };
-  particlesJS.setOnClickHandler = (callback) => {
-    engine.setOnClickHandler(callback);
-  };
-  const pJSDom = engine.dom();
-  return { particlesJS, pJSDom };
-};
-const initPjs = (engine) => {
-  const { particlesJS, pJSDom } = initParticlesJS(engine);
-  window.particlesJS = particlesJS;
-  window.pJSDom = pJSDom;
-  window.Particles = Particles$1;
-  return { particlesJS, pJSDom, Particles: Particles$1 };
-};
 function applyDistance(particle) {
   const initialPosition = particle.initialPosition, { dx, dy } = getDistances(initialPosition, particle.position), dxFixed = Math.abs(dx), dyFixed = Math.abs(dy), { maxDistance } = particle.retina, hDistance = maxDistance.horizontal, vDistance = maxDistance.vertical;
   if (!hDistance && !vDistance) {
@@ -6357,10 +4620,10 @@ function applyDistance(particle) {
   if ((hDistance && dxFixed >= hDistance || vDistance && dyFixed >= vDistance) && !particle.misplaced) {
     particle.misplaced = !!hDistance && dxFixed > hDistance || !!vDistance && dyFixed > vDistance;
     if (hDistance) {
-      particle.velocity.x = particle.velocity.y / 2 - particle.velocity.x;
+      particle.velocity.x = particle.velocity.y * 0.5 - particle.velocity.x;
     }
     if (vDistance) {
-      particle.velocity.y = particle.velocity.x / 2 - particle.velocity.y;
+      particle.velocity.y = particle.velocity.x * 0.5 - particle.velocity.y;
     }
   } else if ((!hDistance || dxFixed < hDistance) && (!vDistance || dyFixed < vDistance) && particle.misplaced) {
     particle.misplaced = false;
@@ -6413,15 +4676,15 @@ function spin(particle, moveSpeed) {
   particle.position.x = particle.spin.center.x + particle.spin.radius * updateFunc.x(particle.spin.angle);
   particle.position.y = particle.spin.center.y + particle.spin.radius * updateFunc.y(particle.spin.angle);
   particle.spin.radius += particle.spin.acceleration;
-  const maxCanvasSize = Math.max(container.canvas.size.width, container.canvas.size.height);
-  if (particle.spin.radius > maxCanvasSize / 2) {
-    particle.spin.radius = maxCanvasSize / 2;
+  const maxCanvasSize = Math.max(container.canvas.size.width, container.canvas.size.height), halfMaxSize = maxCanvasSize * 0.5;
+  if (particle.spin.radius > halfMaxSize) {
+    particle.spin.radius = halfMaxSize;
     particle.spin.acceleration *= -1;
   } else if (particle.spin.radius < 0) {
     particle.spin.radius = 0;
     particle.spin.acceleration *= -1;
   }
-  particle.spin.angle += moveSpeed / 100 * (1 - particle.spin.radius / maxCanvasSize);
+  particle.spin.angle += moveSpeed * 0.01 * (1 - particle.spin.radius / maxCanvasSize);
 }
 function applyPath(particle, delta) {
   const particlesOptions = particle.options, pathOptions = particlesOptions.move.path, pathEnabled = pathOptions.enable;
@@ -6454,8 +4717,8 @@ class BaseMover {
         return;
       }
       const spinPos = spinOptions.position ?? { x: 50, y: 50 }, spinCenter = {
-        x: spinPos.x / 100 * container.canvas.size.width,
-        y: spinPos.y / 100 * container.canvas.size.height
+        x: spinPos.x * 0.01 * container.canvas.size.width,
+        y: spinPos.y * 0.01 * container.canvas.size.height
       }, pos = particle.getPosition(), distance = getDistance(pos, spinCenter), spinAcceleration = getRangeValue(spinOptions.acceleration);
       particle.retina.spinAcceleration = spinAcceleration * container.retina.pixelRatio;
       particle.spin = {
@@ -6497,7 +4760,8 @@ async function loadBaseMover(engine, refresh = true) {
   await engine.addMover("base", () => new BaseMover(), refresh);
 }
 class CircleDrawer {
-  draw(context, particle, radius) {
+  draw(data) {
+    const { context, particle, radius } = data;
     if (!particle.circleRange) {
       particle.circleRange = { min: 0, max: Math.PI * 2 };
     }
@@ -6709,7 +4973,7 @@ function bounceHorizontal(data) {
   const velocity = data.particle.velocity.x;
   let bounced = false;
   if (data.direction === "right" && data.bounds.right >= data.canvasSize.width && velocity > 0 || data.direction === "left" && data.bounds.left <= 0 && velocity < 0) {
-    const newVelocity = getValue(data.particle.options.bounce.horizontal);
+    const newVelocity = getRangeValue(data.particle.options.bounce.horizontal.value);
     data.particle.velocity.x *= -newVelocity;
     bounced = true;
   }
@@ -6738,7 +5002,7 @@ function bounceVertical(data) {
   const velocity = data.particle.velocity.y;
   let bounced = false;
   if (data.direction === "bottom" && data.bounds.bottom >= data.canvasSize.height && velocity > 0 || data.direction === "top" && data.bounds.top <= 0 && velocity < 0) {
-    const newVelocity = getValue(data.particle.options.bounce.vertical);
+    const newVelocity = getRangeValue(data.particle.options.bounce.vertical.value);
     data.particle.velocity.y *= -newVelocity;
     bounced = true;
   }
@@ -6904,7 +5168,7 @@ class OutOutMode {
             break;
           }
           case "normal": {
-            const wrap = particle.options.move.warp, canvasSize = container.canvas.size, newPos = {
+            const warp = particle.options.move.warp, canvasSize = container.canvas.size, newPos = {
               bottom: canvasSize.height + particle.getRadius() + particle.offset.y,
               left: -particle.getRadius() - particle.offset.x,
               right: canvasSize.width + particle.getRadius() + particle.offset.x,
@@ -6913,27 +5177,27 @@ class OutOutMode {
             if (direction === "right" && nextBounds.left > canvasSize.width + particle.offset.x) {
               particle.position.x = newPos.left;
               particle.initialPosition.x = particle.position.x;
-              if (!wrap) {
+              if (!warp) {
                 particle.position.y = getRandom() * canvasSize.height;
                 particle.initialPosition.y = particle.position.y;
               }
             } else if (direction === "left" && nextBounds.right < -particle.offset.x) {
               particle.position.x = newPos.right;
               particle.initialPosition.x = particle.position.x;
-              if (!wrap) {
+              if (!warp) {
                 particle.position.y = getRandom() * canvasSize.height;
                 particle.initialPosition.y = particle.position.y;
               }
             }
             if (direction === "bottom" && nextBounds.top > canvasSize.height + particle.offset.y) {
-              if (!wrap) {
+              if (!warp) {
                 particle.position.x = getRandom() * canvasSize.width;
                 particle.initialPosition.x = particle.position.x;
               }
               particle.position.y = newPos.top;
               particle.initialPosition.y = particle.position.y;
             } else if (direction === "top" && nextBounds.bottom < -particle.offset.y) {
-              if (!wrap) {
+              if (!warp) {
                 particle.position.x = getRandom() * canvasSize.width;
                 particle.initialPosition.x = particle.position.x;
               }
@@ -7079,6 +5343,89 @@ async function loadEasingQuadPlugin() {
   addEasing("ease-out-quad", (value) => 1 - (1 - value) ** 2);
   addEasing("ease-in-out-quad", (value) => value < 0.5 ? 2 * value ** 2 : 1 - (-2 * value + 2) ** 2 / 2);
 }
+const validTypes = ["emoji"];
+const defaultFont = '"Twemoji Mozilla", Apple Color Emoji, "Segoe UI Emoji", "Noto Color Emoji", "EmojiOne Color"';
+class EmojiDrawer {
+  constructor() {
+    this._emojiShapeDict = /* @__PURE__ */ new Map();
+  }
+  destroy() {
+    for (const [key, emojiData] of this._emojiShapeDict) {
+      emojiData instanceof ImageBitmap && emojiData?.close();
+      this._emojiShapeDict.delete(key);
+    }
+  }
+  draw(data) {
+    const { context, particle, radius, opacity } = data, emojiData = particle.emojiData;
+    if (!emojiData) {
+      return;
+    }
+    context.globalAlpha = opacity;
+    context.drawImage(emojiData, -radius, -radius, radius * 2, radius * 2);
+    context.globalAlpha = 1;
+  }
+  async init(container) {
+    const options = container.actualOptions;
+    if (validTypes.find((t) => isInArray(t, options.particles.shape.type))) {
+      const promises = [loadFont(defaultFont)], shapeOptions = validTypes.map((t) => options.particles.shape.options[t]).find((t) => !!t);
+      if (shapeOptions) {
+        executeOnSingleOrMultiple(shapeOptions, (shape) => {
+          shape.font && promises.push(loadFont(shape.font));
+        });
+      }
+      await Promise.all(promises);
+    }
+  }
+  particleDestroy(particle) {
+    delete particle.emojiData;
+  }
+  particleInit(container, particle) {
+    const shapeData = particle.shapeData;
+    if (!shapeData?.value) {
+      return;
+    }
+    const emoji = itemFromSingleOrMultiple(shapeData.value, particle.randomIndexData), font = shapeData.font ?? defaultFont;
+    if (!emoji) {
+      return;
+    }
+    const key = `${emoji}_${font}`, existingData = this._emojiShapeDict.get(key);
+    if (existingData) {
+      particle.emojiData = existingData;
+      return;
+    }
+    const canvasSize = getRangeMax(particle.size.value) * 2;
+    let emojiData;
+    if (typeof OffscreenCanvas !== "undefined") {
+      const canvas = new OffscreenCanvas(canvasSize, canvasSize), context = canvas.getContext("2d");
+      if (!context) {
+        return;
+      }
+      context.font = `400 ${getRangeMax(particle.size.value) * 2}px ${font}`;
+      context.textBaseline = "middle";
+      context.textAlign = "center";
+      context.fillText(emoji, getRangeMax(particle.size.value), getRangeMax(particle.size.value));
+      emojiData = canvas.transferToImageBitmap();
+    } else {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvasSize;
+      canvas.height = canvasSize;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        return;
+      }
+      context.font = `400 ${getRangeMax(particle.size.value) * 2}px ${font}`;
+      context.textBaseline = "middle";
+      context.textAlign = "center";
+      context.fillText(emoji, getRangeMax(particle.size.value), getRangeMax(particle.size.value));
+      emojiData = canvas;
+    }
+    this._emojiShapeDict.set(key, emojiData);
+    particle.emojiData = emojiData;
+  }
+}
+async function loadEmojiShape(engine, refresh = true) {
+  await engine.addShape(validTypes, new EmojiDrawer(), refresh);
+}
 class Attract {
   constructor() {
     this.distance = 200;
@@ -7112,6 +5459,7 @@ class Attract {
     }
   }
 }
+const attractMode = "attract";
 let Attractor$1 = class Attractor extends ExternalInteractorBase {
   constructor(engine, container) {
     super(container);
@@ -7168,7 +5516,7 @@ let Attractor$1 = class Attractor extends ExternalInteractorBase {
     }
     this.handleClickMode = (mode) => {
       const options = this.container.actualOptions, attract = options.interactivity.modes.attract;
-      if (!attract || mode !== "attract") {
+      if (!attract || mode !== attractMode) {
         return;
       }
       if (!container.attract) {
@@ -7206,9 +5554,9 @@ let Attractor$1 = class Attractor extends ExternalInteractorBase {
   }
   async interact() {
     const container = this.container, options = container.actualOptions, mouseMoveStatus = container.interactivity.status === mouseMoveEvent, events = options.interactivity.events, hoverEnabled = events.onHover.enable, hoverMode = events.onHover.mode, clickEnabled = events.onClick.enable, clickMode = events.onClick.mode;
-    if (mouseMoveStatus && hoverEnabled && isInArray("attract", hoverMode)) {
+    if (mouseMoveStatus && hoverEnabled && isInArray(attractMode, hoverMode)) {
       this._hoverAttract();
-    } else if (clickEnabled && isInArray("attract", clickMode)) {
+    } else if (clickEnabled && isInArray(attractMode, clickMode)) {
       this._clickAttract();
     }
   }
@@ -7218,7 +5566,7 @@ let Attractor$1 = class Attractor extends ExternalInteractorBase {
       return false;
     }
     const hoverMode = events.onHover.mode, clickMode = events.onClick.mode;
-    return isInArray("attract", hoverMode) || isInArray("attract", clickMode);
+    return isInArray(attractMode, hoverMode) || isInArray(attractMode, clickMode);
   }
   loadModeOptions(options, ...sources) {
     if (!options.attract) {
@@ -7247,6 +5595,7 @@ class Bounce {
     }
   }
 }
+const bounceMode = "bounce";
 class Bouncer extends ExternalInteractorBase {
   constructor(container) {
     super(container);
@@ -7298,15 +5647,15 @@ class Bouncer extends ExternalInteractorBase {
   }
   async interact() {
     const container = this.container, options = container.actualOptions, events = options.interactivity.events, mouseMoveStatus = container.interactivity.status === mouseMoveEvent, hoverEnabled = events.onHover.enable, hoverMode = events.onHover.mode, divs = events.onDiv;
-    if (mouseMoveStatus && hoverEnabled && isInArray("bounce", hoverMode)) {
+    if (mouseMoveStatus && hoverEnabled && isInArray(bounceMode, hoverMode)) {
       this._processMouseBounce();
     } else {
-      divModeExecute("bounce", divs, (selector, div) => this._singleSelectorBounce(selector, div));
+      divModeExecute(bounceMode, divs, (selector, div) => this._singleSelectorBounce(selector, div));
     }
   }
   isEnabled(particle) {
     const container = this.container, options = container.actualOptions, mouse = container.interactivity.mouse, events = (particle?.interactivity ?? options.interactivity).events, divs = events.onDiv;
-    return mouse.position && events.onHover.enable && isInArray("bounce", events.onHover.mode) || isDivModeEnabled("bounce", divs);
+    return mouse.position && events.onHover.enable && isInArray(bounceMode, events.onHover.mode) || isDivModeEnabled(bounceMode, divs);
   }
   loadModeOptions(options, ...sources) {
     if (!options.bounce) {
@@ -7360,19 +5709,10 @@ class BubbleDiv extends BubbleBase {
     super();
     this.selectors = [];
   }
-  get ids() {
-    return executeOnSingleOrMultiple(this.selectors, (t) => t.replace("#", ""));
-  }
-  set ids(value) {
-    this.selectors = executeOnSingleOrMultiple(value, (t) => `#${t}`);
-  }
   load(data) {
     super.load(data);
     if (!data) {
       return;
-    }
-    if (data.ids !== void 0) {
-      this.ids = data.ids;
     }
     if (data.selectors !== void 0) {
       this.selectors = data.selectors;
@@ -7401,6 +5741,7 @@ function calculateBubbleValue(particleValue, modeValue, optionsValue, ratio) {
     return clamp(value, modeValue, particleValue);
   }
 }
+const bubbleMode = "bubble";
 class Bubbler extends ExternalInteractorBase {
   constructor(container) {
     super(container);
@@ -7601,7 +5942,7 @@ class Bubbler extends ExternalInteractorBase {
       container.bubble = {};
     }
     this.handleClickMode = (mode) => {
-      if (mode !== "bubble") {
+      if (mode !== bubbleMode) {
         return;
       }
       if (!container.bubble) {
@@ -7631,20 +5972,20 @@ class Bubbler extends ExternalInteractorBase {
   }
   async interact(delta) {
     const options = this.container.actualOptions, events = options.interactivity.events, onHover = events.onHover, onClick = events.onClick, hoverEnabled = onHover.enable, hoverMode = onHover.mode, clickEnabled = onClick.enable, clickMode = onClick.mode, divs = events.onDiv;
-    if (hoverEnabled && isInArray("bubble", hoverMode)) {
+    if (hoverEnabled && isInArray(bubbleMode, hoverMode)) {
       this._hoverBubble();
-    } else if (clickEnabled && isInArray("bubble", clickMode)) {
+    } else if (clickEnabled && isInArray(bubbleMode, clickMode)) {
       this._clickBubble();
     } else {
-      divModeExecute("bubble", divs, (selector, div) => this._singleSelectorHover(delta, selector, div));
+      divModeExecute(bubbleMode, divs, (selector, div) => this._singleSelectorHover(delta, selector, div));
     }
   }
   isEnabled(particle) {
-    const container = this.container, options = container.actualOptions, mouse = container.interactivity.mouse, events = (particle?.interactivity ?? options.interactivity).events, { onClick, onDiv, onHover } = events, divBubble = isDivModeEnabled("bubble", onDiv);
+    const container = this.container, options = container.actualOptions, mouse = container.interactivity.mouse, events = (particle?.interactivity ?? options.interactivity).events, { onClick, onDiv, onHover } = events, divBubble = isDivModeEnabled(bubbleMode, onDiv);
     if (!(divBubble || onHover.enable && mouse.position || onClick.enable && mouse.clickPosition)) {
       return false;
     }
-    return isInArray("bubble", onHover.mode) || isInArray("bubble", onClick.mode) || divBubble;
+    return isInArray(bubbleMode, onHover.mode) || isInArray(bubbleMode, onClick.mode) || divBubble;
   }
   loadModeOptions(options, ...sources) {
     if (!options.bubble) {
@@ -7680,18 +6021,6 @@ class Connect {
     this.links = new ConnectLinks();
     this.radius = 60;
   }
-  get lineLinked() {
-    return this.links;
-  }
-  set lineLinked(value) {
-    this.links = value;
-  }
-  get line_linked() {
-    return this.links;
-  }
-  set line_linked(value) {
-    this.links = value;
-  }
   load(data) {
     if (!data) {
       return;
@@ -7699,7 +6028,7 @@ class Connect {
     if (data.distance !== void 0) {
       this.distance = data.distance;
     }
-    this.links.load(data.links ?? data.lineLinked ?? data.line_linked);
+    this.links.load(data.links);
     if (data.radius !== void 0) {
       this.radius = data.radius;
     }
@@ -7739,6 +6068,7 @@ function drawConnection(container, p1, p2) {
     drawConnectLine(ctx, p1.retina.linksWidth ?? 0, ls, pos1, pos2);
   });
 }
+const connectMode = "connect";
 class Connector extends ExternalInteractorBase {
   constructor(container) {
     super(container);
@@ -7779,7 +6109,7 @@ class Connector extends ExternalInteractorBase {
     if (!(events.onHover.enable && mouse.position)) {
       return false;
     }
-    return isInArray("connect", events.onHover.mode);
+    return isInArray(connectMode, events.onHover.mode);
   }
   loadModeOptions(options, ...sources) {
     if (!options.connect) {
@@ -7824,18 +6154,6 @@ class Grab {
     this.distance = 100;
     this.links = new GrabLinks();
   }
-  get lineLinked() {
-    return this.links;
-  }
-  set lineLinked(value) {
-    this.links = value;
-  }
-  get line_linked() {
-    return this.links;
-  }
-  set line_linked(value) {
-    this.links = value;
-  }
   load(data) {
     if (!data) {
       return;
@@ -7843,7 +6161,7 @@ class Grab {
     if (data.distance !== void 0) {
       this.distance = data.distance;
     }
-    this.links.load(data.links ?? data.lineLinked ?? data.line_linked);
+    this.links.load(data.links);
   }
 }
 function drawGrabLine(context, width, begin, end, colorLine, opacity) {
@@ -7858,6 +6176,7 @@ function drawGrab(container, particle, lineColor, opacity, mousePos) {
     drawGrabLine(ctx, particle.retina.linksWidth ?? 0, beginPos, mousePos, lineColor, opacity);
   });
 }
+const grabMode = "grab";
 class Grabber extends ExternalInteractorBase {
   constructor(container) {
     super(container);
@@ -7908,7 +6227,7 @@ class Grabber extends ExternalInteractorBase {
   }
   isEnabled(particle) {
     const container = this.container, mouse = container.interactivity.mouse, events = (particle?.interactivity ?? container.actualOptions.interactivity).events;
-    return events.onHover.enable && !!mouse.position && isInArray("grab", events.onHover.mode);
+    return events.onHover.enable && !!mouse.position && isInArray(grabMode, events.onHover.mode);
   }
   loadModeOptions(options, ...sources) {
     if (!options.grab) {
@@ -7924,11 +6243,12 @@ class Grabber extends ExternalInteractorBase {
 async function loadExternalGrabInteraction(engine, refresh = true) {
   await engine.addInteractor("externalGrab", (container) => new Grabber(container), refresh);
 }
+const pauseMode = "pause";
 class Pauser extends ExternalInteractorBase {
   constructor(container) {
     super(container);
     this.handleClickMode = (mode) => {
-      if (mode !== "pause") {
+      if (mode !== pauseMode) {
         return;
       }
       const container2 = this.container;
@@ -7960,12 +6280,6 @@ class Push {
     this.groups = [];
     this.quantity = 4;
   }
-  get particles_nb() {
-    return this.quantity;
-  }
-  set particles_nb(value) {
-    this.quantity = setRangeValue(value);
-  }
   load(data) {
     if (!data) {
       return;
@@ -7979,17 +6293,18 @@ class Push {
     if (!this.groups.length) {
       this.default = true;
     }
-    const quantity = data.quantity ?? data.particles_nb;
+    const quantity = data.quantity;
     if (quantity !== void 0) {
       this.quantity = setRangeValue(quantity);
     }
   }
 }
+const pushMode = "push";
 class Pusher extends ExternalInteractorBase {
   constructor(container) {
     super(container);
     this.handleClickMode = (mode) => {
-      if (mode !== "push") {
+      if (mode !== pushMode) {
         return;
       }
       const container2 = this.container, options = container2.actualOptions, pushOptions = options.interactivity.modes.push;
@@ -8031,28 +6346,23 @@ class Remove {
   constructor() {
     this.quantity = 2;
   }
-  get particles_nb() {
-    return this.quantity;
-  }
-  set particles_nb(value) {
-    this.quantity = setRangeValue(value);
-  }
   load(data) {
     if (!data) {
       return;
     }
-    const quantity = data.quantity ?? data.particles_nb;
+    const quantity = data.quantity;
     if (quantity !== void 0) {
       this.quantity = setRangeValue(quantity);
     }
   }
 }
+const removeMode = "remove";
 class Remover extends ExternalInteractorBase {
   constructor(container) {
     super(container);
     this.handleClickMode = (mode) => {
       const container2 = this.container, options = container2.actualOptions;
-      if (!options.interactivity.modes.remove || mode !== "remove") {
+      if (!options.interactivity.modes.remove || mode !== removeMode) {
         return;
       }
       const removeNb = getRangeValue(options.interactivity.modes.remove.quantity);
@@ -8120,19 +6430,10 @@ class RepulseDiv extends RepulseBase {
     super();
     this.selectors = [];
   }
-  get ids() {
-    return executeOnSingleOrMultiple(this.selectors, (t) => t.replace("#", ""));
-  }
-  set ids(value) {
-    this.selectors = executeOnSingleOrMultiple(value, (t) => `#${t}`);
-  }
   load(data) {
     super.load(data);
     if (!data) {
       return;
-    }
-    if (data.ids !== void 0) {
-      this.ids = data.ids;
     }
     if (data.selectors !== void 0) {
       this.selectors = data.selectors;
@@ -8152,6 +6453,7 @@ class Repulse extends RepulseBase {
     });
   }
 }
+const repulseMode = "repulse";
 class Repulser extends ExternalInteractorBase {
   constructor(engine, container) {
     super(container);
@@ -8208,8 +6510,9 @@ class Repulser extends ExternalInteractorBase {
       if (!repulseOptions) {
         return;
       }
+      const { easing, speed, factor, maxSpeed } = repulseOptions, easingFunc = getEasing(easing), velocity = (divRepulse?.speed ?? speed) * factor;
       for (const particle of query) {
-        const { dx, dy, distance } = getDistances(particle.position, position), velocity = (divRepulse?.speed ?? repulseOptions.speed) * repulseOptions.factor, repulseFactor = clamp(getEasing(repulseOptions.easing)(1 - distance / repulseRadius) * velocity, 0, repulseOptions.maxSpeed), normVec = Vector.create(distance === 0 ? velocity : dx / distance * repulseFactor, distance === 0 ? velocity : dy / distance * repulseFactor);
+        const { dx, dy, distance } = getDistances(particle.position, position), repulseFactor = clamp(easingFunc(1 - distance / repulseRadius) * velocity, 0, maxSpeed), normVec = Vector.create(distance === 0 ? velocity : dx / distance * repulseFactor, distance === 0 ? velocity : dy / distance * repulseFactor);
         particle.position.addTo(normVec);
       }
     };
@@ -8236,7 +6539,7 @@ class Repulser extends ExternalInteractorBase {
     }
     this.handleClickMode = (mode) => {
       const options = this.container.actualOptions, repulseOpts = options.interactivity.modes.repulse;
-      if (!repulseOpts || mode !== "repulse") {
+      if (!repulseOpts || mode !== repulseMode) {
         return;
       }
       if (!container.repulse) {
@@ -8272,21 +6575,21 @@ class Repulser extends ExternalInteractorBase {
   }
   async interact() {
     const container = this.container, options = container.actualOptions, mouseMoveStatus = container.interactivity.status === mouseMoveEvent, events = options.interactivity.events, hover = events.onHover, hoverEnabled = hover.enable, hoverMode = hover.mode, click = events.onClick, clickEnabled = click.enable, clickMode = click.mode, divs = events.onDiv;
-    if (mouseMoveStatus && hoverEnabled && isInArray("repulse", hoverMode)) {
+    if (mouseMoveStatus && hoverEnabled && isInArray(repulseMode, hoverMode)) {
       this._hoverRepulse();
-    } else if (clickEnabled && isInArray("repulse", clickMode)) {
+    } else if (clickEnabled && isInArray(repulseMode, clickMode)) {
       this._clickRepulse();
     } else {
-      divModeExecute("repulse", divs, (selector, div) => this._singleSelectorRepulse(selector, div));
+      divModeExecute(repulseMode, divs, (selector, div) => this._singleSelectorRepulse(selector, div));
     }
   }
   isEnabled(particle) {
-    const container = this.container, options = container.actualOptions, mouse = container.interactivity.mouse, events = (particle?.interactivity ?? options.interactivity).events, divs = events.onDiv, hover = events.onHover, click = events.onClick, divRepulse = isDivModeEnabled("repulse", divs);
+    const container = this.container, options = container.actualOptions, mouse = container.interactivity.mouse, events = (particle?.interactivity ?? options.interactivity).events, divs = events.onDiv, hover = events.onHover, click = events.onClick, divRepulse = isDivModeEnabled(repulseMode, divs);
     if (!(divRepulse || hover.enable && mouse.position || click.enable && mouse.clickPosition)) {
       return false;
     }
     const hoverMode = hover.mode, clickMode = click.mode;
-    return isInArray("repulse", hoverMode) || isInArray("repulse", clickMode) || divRepulse;
+    return isInArray(repulseMode, hoverMode) || isInArray(repulseMode, clickMode) || divRepulse;
   }
   loadModeOptions(options, ...sources) {
     if (!options.repulse) {
@@ -8319,6 +6622,7 @@ class Slow {
     }
   }
 }
+const slowMode = "slow";
 class Slower extends ExternalInteractorBase {
   constructor(container) {
     super(container);
@@ -8340,7 +6644,7 @@ class Slower extends ExternalInteractorBase {
   }
   isEnabled(particle) {
     const container = this.container, mouse = container.interactivity.mouse, events = (particle?.interactivity ?? container.actualOptions.interactivity).events;
-    return events.onHover.enable && !!mouse.position && isInArray("slow", events.onHover.mode);
+    return events.onHover.enable && !!mouse.position && isInArray(slowMode, events.onHover.mode);
   }
   loadModeOptions(options, ...sources) {
     if (!options.slow) {
@@ -8797,7 +7101,7 @@ function replaceImageColor(image, imageData, color, particle) {
     },
     loaded: false,
     ratio: imageData.width / imageData.height,
-    replaceColor: imageData.replaceColor ?? imageData.replace_color,
+    replaceColor: imageData.replaceColor,
     source: imageData.src
   };
   return new Promise((resolve) => {
@@ -8832,7 +7136,7 @@ class ImageDrawer {
       await this._engine.loadImage({
         gif: imageShape.gif,
         name: imageShape.name,
-        replaceColor: imageShape.replaceColor ?? imageShape.replace_color ?? false,
+        replaceColor: imageShape.replaceColor ?? false,
         src: imageShape.src
       });
     };
@@ -8844,8 +7148,8 @@ class ImageDrawer {
     }
     this._engine.images.push(image);
   }
-  draw(context, particle, radius, opacity, delta) {
-    const image = particle.image, element = image?.element;
+  draw(data) {
+    const { context, radius, particle, opacity, delta } = data, image = particle.image, element = image?.element;
     if (!image) {
       return;
     }
@@ -8921,8 +7225,8 @@ class ImageDrawer {
       const ratio = image.ratio, pos = {
         x: -radius,
         y: -radius
-      };
-      context.drawImage(element, pos.x, pos.y, radius * 2, radius * 2 / ratio);
+      }, diameter = radius * 2;
+      context.drawImage(element, pos.x, pos.y, diameter, diameter / ratio);
     }
     context.globalAlpha = 1;
   }
@@ -8945,7 +7249,11 @@ class ImageDrawer {
     if (!this._engine.images) {
       this._engine.images = [];
     }
-    const imageData = particle.shapeData, image = this._engine.images.find((t) => t.name === imageData.name || t.source === imageData.src);
+    const imageData = particle.shapeData;
+    if (!imageData) {
+      return;
+    }
+    const image = this._engine.images.find((t) => t.name === imageData.name || t.source === imageData.src);
     if (!image) {
       this.loadImageShape(imageData).then(() => {
         this.loadShape(particle);
@@ -8959,11 +7267,15 @@ class ImageDrawer {
     if (!this._engine.images) {
       this._engine.images = [];
     }
-    const images = this._engine.images, imageData = particle.shapeData, color = particle.getFillColor(), image = images.find((t) => t.name === imageData.name || t.source === imageData.src);
+    const images = this._engine.images, imageData = particle.shapeData;
+    if (!imageData) {
+      return;
+    }
+    const color = particle.getFillColor(), image = images.find((t) => t.name === imageData.name || t.source === imageData.src);
     if (!image) {
       return;
     }
-    const replaceColor = imageData.replaceColor ?? imageData.replace_color ?? image.replaceColor;
+    const replaceColor = imageData.replaceColor ?? image.replaceColor;
     if (image.loading) {
       setTimeout(() => {
         this.particleInit(container, particle);
@@ -8991,14 +7303,14 @@ class ImageDrawer {
       if (!imageRes.ratio) {
         imageRes.ratio = 1;
       }
-      const fill = imageData.fill ?? particle.fill, close = imageData.close ?? particle.close, imageShape = {
+      const fill = imageData.fill ?? particle.shapeFill, close = imageData.close ?? particle.shapeClose, imageShape = {
         image: imageRes,
         fill,
         close
       };
       particle.image = imageShape.image;
-      particle.fill = imageShape.fill;
-      particle.close = imageShape.close;
+      particle.shapeFill = imageShape.fill;
+      particle.shapeClose = imageShape.close;
     })();
   }
 }
@@ -9119,7 +7431,6 @@ class LifeDelay extends ValueWithRandom {
 class LifeDuration extends ValueWithRandom {
   constructor() {
     super();
-    this.random.minimumValue = 1e-4;
     this.sync = false;
   }
   load(data) {
@@ -9243,8 +7554,8 @@ async function loadLifeUpdater(engine, refresh = true) {
   await engine.addParticleUpdater("life", (container) => new LifeUpdater(container), refresh);
 }
 class LineDrawer {
-  draw(context, particle, radius) {
-    const shapeData = particle.shapeData;
+  draw(data) {
+    const { context, particle, radius } = data, shapeData = particle.shapeData;
     context.moveTo(-radius / 2, 0);
     context.lineTo(radius / 2, 0);
     context.lineCap = shapeData?.cap ?? "butt";
@@ -9272,8 +7583,8 @@ class ParallaxMover {
       return;
     }
     const canvasSize = container.canvas.size, canvasCenter = {
-      x: canvasSize.width / 2,
-      y: canvasSize.height / 2
+      x: canvasSize.width * 0.5,
+      y: canvasSize.height * 0.5
     }, parallaxSmooth = parallaxOptions.smooth, factor = particle.getRadius() / parallaxForce, centerDistance = {
       x: (mousePos.x - canvasCenter.x) * factor,
       y: (mousePos.y - canvasCenter.y) * factor
@@ -9294,7 +7605,11 @@ class Attractor2 extends ParticlesInteractorBase {
   init() {
   }
   async interact(p1) {
-    const container = this.container, distance = p1.retina.attractDistance ?? container.retina.attractDistance, pos1 = p1.getPosition(), query = container.particles.quadTree.queryCircle(pos1, distance);
+    const container = this.container;
+    if (p1.attractDistance === void 0) {
+      p1.attractDistance = getRangeValue(p1.options.move.attract.distance) * container.retina.pixelRatio;
+    }
+    const distance = p1.attractDistance, pos1 = p1.getPosition(), query = container.particles.quadTree.queryCircle(pos1, distance);
     for (const p2 of query) {
       if (p1 === p2 || !p2.options.move.attract.enable || p2.destroyed || p2.spawning) {
         continue;
@@ -9621,7 +7936,7 @@ class Linker extends ParticlesInteractorBase {
       options.links = new Links();
     }
     for (const source of sources) {
-      options.links.load(source?.links ?? source?.lineLinked ?? source?.line_linked);
+      options.links.load(source?.links);
     }
   }
   reset() {
@@ -9629,6 +7944,13 @@ class Linker extends ParticlesInteractorBase {
 }
 async function loadLinksInteraction(engine, refresh = true) {
   await engine.addInteractor("particlesLinks", (container) => new Linker(container), refresh);
+}
+function drawTriangle(context, p1, p2, p3) {
+  context.beginPath();
+  context.moveTo(p1.x, p1.y);
+  context.lineTo(p2.x, p2.y);
+  context.lineTo(p3.x, p3.y);
+  context.closePath();
 }
 function drawLinkLine(params) {
   let drawn = false;
@@ -9881,8 +8203,8 @@ async function loadParticlesLinksInteraction(engine, refresh = true) {
   await loadLinksPlugin(engine, refresh);
 }
 class PolygonDrawerBase {
-  draw(context, particle, radius) {
-    const start = this.getCenter(particle, radius), side = this.getSidesData(particle, radius), sideCount = side.count.numerator * side.count.denominator, decimalSides = side.count.numerator / side.count.denominator, interiorAngleDegrees = 180 * (decimalSides - 2) / decimalSides, interiorAngle = Math.PI - Math.PI * interiorAngleDegrees / 180;
+  draw(data) {
+    const { context, particle, radius } = data, start = this.getCenter(particle, radius), side = this.getSidesData(particle, radius), sideCount = side.count.numerator * side.count.denominator, decimalSides = side.count.numerator / side.count.denominator, interiorAngleDegrees = 180 * (decimalSides - 2) / decimalSides, interiorAngle = Math.PI - Math.PI * interiorAngleDegrees / 180;
     if (!context) {
       return;
     }
@@ -9897,7 +8219,7 @@ class PolygonDrawerBase {
   }
   getSidesCount(particle) {
     const polygon = particle.shapeData;
-    return Math.round(getRangeValue(polygon?.sides ?? polygon?.nb_sides ?? 5));
+    return Math.round(getRangeValue(polygon?.sides ?? 5));
   }
 }
 class PolygonDrawer extends PolygonDrawerBase {
@@ -10089,8 +8411,8 @@ async function loadRotateUpdater(engine, refresh = true) {
 }
 const fixFactor = Math.sqrt(2);
 class SquareDrawer {
-  draw(context, particle, radius) {
-    const fixedRadius = radius / fixFactor, fixedDiameter = fixedRadius * 2;
+  draw(data) {
+    const { context, radius } = data, fixedRadius = radius / fixFactor, fixedDiameter = fixedRadius * 2;
     context.rect(-fixedRadius, -fixedRadius, fixedDiameter, fixedDiameter);
   }
   getSidesCount() {
@@ -10101,8 +8423,8 @@ async function loadSquareShape(engine, refresh = true) {
   await engine.addShape(["edge", "square"], new SquareDrawer(), refresh);
 }
 class StarDrawer {
-  draw(context, particle, radius) {
-    const sides = particle.sides, inset = particle.starInset ?? 2;
+  draw(data) {
+    const { context, particle, radius } = data, sides = particle.sides, inset = particle.starInset ?? 2;
     context.moveTo(0, 0 - radius);
     for (let i = 0; i < sides; i++) {
       context.rotate(Math.PI / sides);
@@ -10113,11 +8435,11 @@ class StarDrawer {
   }
   getSidesCount(particle) {
     const star = particle.shapeData;
-    return Math.round(getRangeValue(star?.sides ?? star?.nb_sides ?? 5));
+    return Math.round(getRangeValue(star?.sides ?? 5));
   }
   particleInit(container, particle) {
-    const star = particle.shapeData, inset = getRangeValue(star?.inset ?? 2);
-    particle.starInset = inset;
+    const star = particle.shapeData;
+    particle.starInset = getRangeValue(star?.inset ?? 2);
   }
 }
 async function loadStarShape(engine, refresh = true) {
@@ -10211,67 +8533,7 @@ class StrokeColorUpdater {
 async function loadStrokeColorUpdater(engine, refresh = true) {
   await engine.addParticleUpdater("strokeColor", (container) => new StrokeColorUpdater(container), refresh);
 }
-const validTypes = ["text", "character", "char"];
-class TextDrawer {
-  draw(context, particle, radius, opacity) {
-    const character = particle.shapeData;
-    if (character === void 0) {
-      return;
-    }
-    const textData = character.value;
-    if (textData === void 0) {
-      return;
-    }
-    if (particle.text === void 0) {
-      particle.text = itemFromSingleOrMultiple(textData, particle.randomIndexData);
-    }
-    const text = particle.text, style = character.style ?? "", weight = character.weight ?? "400", size = Math.round(radius) * 2, font = character.font ?? "Verdana", fill = particle.fill, offsetX = text.length * radius / 2;
-    context.font = `${style} ${weight} ${size}px "${font}"`;
-    const pos = {
-      x: -offsetX,
-      y: radius / 2
-    };
-    context.globalAlpha = opacity;
-    if (fill) {
-      context.fillText(text, pos.x, pos.y);
-    } else {
-      context.strokeText(text, pos.x, pos.y);
-    }
-    context.globalAlpha = 1;
-  }
-  getSidesCount() {
-    return 12;
-  }
-  async init(container) {
-    const options = container.actualOptions;
-    if (validTypes.find((t) => isInArray(t, options.particles.shape.type))) {
-      const shapeOptions = validTypes.map((t) => options.particles.shape.options[t]).find((t) => !!t), promises = [];
-      executeOnSingleOrMultiple(shapeOptions, (shape) => {
-        promises.push(loadFont(shape.font, shape.weight));
-      });
-      await Promise.all(promises);
-    }
-  }
-  particleInit(container, particle) {
-    if (!particle.shape || !validTypes.includes(particle.shape)) {
-      return;
-    }
-    const character = particle.shapeData;
-    if (character === void 0) {
-      return;
-    }
-    const textData = character.value;
-    if (textData === void 0) {
-      return;
-    }
-    particle.text = itemFromSingleOrMultiple(textData, particle.randomIndexData);
-  }
-}
-async function loadTextShape(engine, refresh = true) {
-  await engine.addShape(validTypes, new TextDrawer(), refresh);
-}
 async function loadSlim(engine, refresh = true) {
-  initPjs(engine);
   await loadParallaxMover(engine, false);
   await loadExternalAttractInteraction(engine, false);
   await loadExternalBounceInteraction(engine, false);
@@ -10287,351 +8549,37 @@ async function loadSlim(engine, refresh = true) {
   await loadParticlesCollisionsInteraction(engine, false);
   await loadParticlesLinksInteraction(engine, false);
   await loadEasingQuadPlugin();
+  await loadEmojiShape(engine, false);
   await loadImageShape(engine, false);
   await loadLineShape(engine, false);
   await loadPolygonShape(engine, false);
   await loadSquareShape(engine, false);
   await loadStarShape(engine, false);
-  await loadTextShape(engine, false);
   await loadLifeUpdater(engine, false);
   await loadRotateUpdater(engine, false);
   await loadStrokeColorUpdater(engine, false);
   await loadBasic(engine, refresh);
 }
-class TiltAnimation {
-  constructor() {
-    this.enable = false;
-    this.speed = 0;
-    this.decay = 0;
-    this.sync = false;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.enable !== void 0) {
-      this.enable = data.enable;
-    }
-    if (data.speed !== void 0) {
-      this.speed = setRangeValue(data.speed);
-    }
-    if (data.decay !== void 0) {
-      this.decay = setRangeValue(data.decay);
-    }
-    if (data.sync !== void 0) {
-      this.sync = data.sync;
-    }
-  }
+const initialized = writable(false);
+async function particlesInit(init2) {
+  tsParticles.init();
+  await init2(tsParticles);
+  initialized.set(true);
 }
-class Tilt extends ValueWithRandom {
-  constructor() {
-    super();
-    this.animation = new TiltAnimation();
-    this.direction = "clockwise";
-    this.enable = false;
-    this.value = 0;
-  }
-  load(data) {
-    super.load(data);
-    if (!data) {
-      return;
-    }
-    this.animation.load(data.animation);
-    if (data.direction !== void 0) {
-      this.direction = data.direction;
-    }
-    if (data.enable !== void 0) {
-      this.enable = data.enable;
-    }
-  }
-}
-function updateTilt(particle, delta) {
-  if (!particle.tilt || !particle.options.tilt) {
-    return;
-  }
-  const tilt = particle.options.tilt, tiltAnimation = tilt.animation, speed = (particle.tilt.velocity ?? 0) * delta.factor, max = 2 * Math.PI, decay = particle.tilt.decay ?? 1;
-  if (!tiltAnimation.enable) {
-    return;
-  }
-  switch (particle.tilt.status) {
-    case "increasing":
-      particle.tilt.value += speed;
-      if (particle.tilt.value > max) {
-        particle.tilt.value -= max;
-      }
-      break;
-    case "decreasing":
-    default:
-      particle.tilt.value -= speed;
-      if (particle.tilt.value < 0) {
-        particle.tilt.value += max;
-      }
-      break;
-  }
-  if (particle.tilt.velocity && decay !== 1) {
-    particle.tilt.velocity *= decay;
-  }
-}
-class TiltUpdater {
-  constructor(container) {
-    this.container = container;
-  }
-  getTransformValues(particle) {
-    const tilt = particle.tilt?.enable && particle.tilt;
-    return {
-      b: tilt ? Math.cos(tilt.value) * tilt.cosDirection : void 0,
-      c: tilt ? Math.sin(tilt.value) * tilt.sinDirection : void 0
-    };
-  }
-  init(particle) {
-    const tiltOptions = particle.options.tilt;
-    if (!tiltOptions) {
-      return;
-    }
-    particle.tilt = {
-      enable: tiltOptions.enable,
-      value: getRangeValue(tiltOptions.value) * Math.PI / 180,
-      sinDirection: getRandom() >= 0.5 ? 1 : -1,
-      cosDirection: getRandom() >= 0.5 ? 1 : -1
-    };
-    let tiltDirection = tiltOptions.direction;
-    if (tiltDirection === "random") {
-      const index = Math.floor(getRandom() * 2);
-      tiltDirection = index > 0 ? "counter-clockwise" : "clockwise";
-    }
-    switch (tiltDirection) {
-      case "counter-clockwise":
-      case "counterClockwise":
-        particle.tilt.status = "decreasing";
-        break;
-      case "clockwise":
-        particle.tilt.status = "increasing";
-        break;
-    }
-    const tiltAnimation = particle.options.tilt?.animation;
-    if (tiltAnimation?.enable) {
-      particle.tilt.decay = 1 - getRangeValue(tiltAnimation.decay);
-      particle.tilt.velocity = getRangeValue(tiltAnimation.speed) / 360 * this.container.retina.reduceFactor;
-      if (!tiltAnimation.sync) {
-        particle.tilt.velocity *= getRandom();
-      }
-    }
-  }
-  isEnabled(particle) {
-    const tiltAnimation = particle.options.tilt?.animation;
-    return !particle.destroyed && !particle.spawning && !!tiltAnimation?.enable;
-  }
-  loadOptions(options, ...sources) {
-    if (!options.tilt) {
-      options.tilt = new Tilt();
-    }
-    for (const source of sources) {
-      options.tilt.load(source?.tilt);
-    }
-  }
-  update(particle, delta) {
-    if (!this.isEnabled(particle)) {
-      return;
-    }
-    updateTilt(particle, delta);
-  }
-}
-async function loadTiltUpdater(engine, refresh = true) {
-  await engine.addParticleUpdater("tilt", (container) => new TiltUpdater(container), refresh);
-}
-class TwinkleValues {
-  constructor() {
-    this.enable = false;
-    this.frequency = 0.05;
-    this.opacity = 1;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.color !== void 0) {
-      this.color = OptionsColor.create(this.color, data.color);
-    }
-    if (data.enable !== void 0) {
-      this.enable = data.enable;
-    }
-    if (data.frequency !== void 0) {
-      this.frequency = data.frequency;
-    }
-    if (data.opacity !== void 0) {
-      this.opacity = setRangeValue(data.opacity);
-    }
-  }
-}
-class Twinkle {
-  constructor() {
-    this.lines = new TwinkleValues();
-    this.particles = new TwinkleValues();
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    this.lines.load(data.lines);
-    this.particles.load(data.particles);
-  }
-}
-class TwinkleUpdater {
-  getColorStyles(particle, context, radius, opacity) {
-    const pOptions = particle.options, twinkleOptions = pOptions.twinkle;
-    if (!twinkleOptions) {
-      return {};
-    }
-    const twinkle = twinkleOptions.particles, twinkling = twinkle.enable && getRandom() < twinkle.frequency, zIndexOptions = particle.options.zIndex, zOpacityFactor = (1 - particle.zIndexFactor) ** zIndexOptions.opacityRate, twinklingOpacity = twinkling ? getRangeValue(twinkle.opacity) * zOpacityFactor : opacity, twinkleRgb = rangeColorToHsl(twinkle.color), twinkleStyle = twinkleRgb ? getStyleFromHsl(twinkleRgb, twinklingOpacity) : void 0, res = {}, needsTwinkle = twinkling && twinkleStyle;
-    res.fill = needsTwinkle ? twinkleStyle : void 0;
-    res.stroke = needsTwinkle ? twinkleStyle : void 0;
-    return res;
-  }
-  init() {
-  }
-  isEnabled(particle) {
-    const pOptions = particle.options, twinkleOptions = pOptions.twinkle;
-    if (!twinkleOptions) {
-      return false;
-    }
-    return twinkleOptions.particles.enable;
-  }
-  loadOptions(options, ...sources) {
-    if (!options.twinkle) {
-      options.twinkle = new Twinkle();
-    }
-    for (const source of sources) {
-      options.twinkle.load(source?.twinkle);
-    }
-  }
-  update() {
-  }
-}
-async function loadTwinkleUpdater(engine, refresh = true) {
-  await engine.addParticleUpdater("twinkle", () => new TwinkleUpdater(), refresh);
-}
-class WobbleSpeed {
-  constructor() {
-    this.angle = 50;
-    this.move = 10;
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.angle !== void 0) {
-      this.angle = setRangeValue(data.angle);
-    }
-    if (data.move !== void 0) {
-      this.move = setRangeValue(data.move);
-    }
-  }
-}
-class Wobble {
-  constructor() {
-    this.distance = 5;
-    this.enable = false;
-    this.speed = new WobbleSpeed();
-  }
-  load(data) {
-    if (!data) {
-      return;
-    }
-    if (data.distance !== void 0) {
-      this.distance = setRangeValue(data.distance);
-    }
-    if (data.enable !== void 0) {
-      this.enable = data.enable;
-    }
-    if (data.speed !== void 0) {
-      if (isNumber(data.speed)) {
-        this.speed.load({ angle: data.speed });
-      } else {
-        const rangeSpeed = data.speed;
-        if (rangeSpeed.min !== void 0) {
-          this.speed.load({ angle: rangeSpeed });
-        } else {
-          this.speed.load(data.speed);
-        }
-      }
-    }
-  }
-}
-function updateWobble(particle, delta) {
-  const { wobble: wobbleOptions } = particle.options, { wobble } = particle;
-  if (!wobbleOptions?.enable || !wobble) {
-    return;
-  }
-  const angleSpeed = wobble.angleSpeed * delta.factor, moveSpeed = wobble.moveSpeed * delta.factor, distance = moveSpeed * ((particle.retina.wobbleDistance ?? 0) * delta.factor) / (1e3 / 60), max = 2 * Math.PI, { position } = particle;
-  wobble.angle += angleSpeed;
-  if (wobble.angle > max) {
-    wobble.angle -= max;
-  }
-  position.x += distance * Math.cos(wobble.angle);
-  position.y += distance * Math.abs(Math.sin(wobble.angle));
-}
-class WobbleUpdater {
-  constructor(container) {
-    this.container = container;
-  }
-  init(particle) {
-    const wobbleOpt = particle.options.wobble;
-    if (wobbleOpt?.enable) {
-      particle.wobble = {
-        angle: getRandom() * Math.PI * 2,
-        angleSpeed: getRangeValue(wobbleOpt.speed.angle) / 360,
-        moveSpeed: getRangeValue(wobbleOpt.speed.move) / 10
-      };
-    } else {
-      particle.wobble = {
-        angle: 0,
-        angleSpeed: 0,
-        moveSpeed: 0
-      };
-    }
-    particle.retina.wobbleDistance = getRangeValue(wobbleOpt?.distance ?? 0) * this.container.retina.pixelRatio;
-  }
-  isEnabled(particle) {
-    return !particle.destroyed && !particle.spawning && !!particle.options.wobble?.enable;
-  }
-  loadOptions(options, ...sources) {
-    if (!options.wobble) {
-      options.wobble = new Wobble();
-    }
-    for (const source of sources) {
-      options.wobble.load(source?.wobble);
-    }
-  }
-  update(particle, delta) {
-    if (!this.isEnabled(particle)) {
-      return;
-    }
-    updateWobble(particle, delta);
-  }
-}
-async function loadWobbleUpdater(engine, refresh = true) {
-  await engine.addParticleUpdater("wobble", (container) => new WobbleUpdater(container), refresh);
-}
-async function loadFull(engine, refresh = true) {
-  await loadDestroyUpdater(engine, false);
-  await loadRollUpdater(engine, false);
-  await loadTiltUpdater(engine, false);
-  await loadTwinkleUpdater(engine, false);
-  await loadWobbleUpdater(engine, false);
-  await loadExternalTrailInteraction(engine, false);
-  await loadAbsorbersPlugin(engine, false);
-  await loadEmittersPlugin(engine, false);
-  await loadSlim(engine, refresh);
-}
-const Particles3 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+const Particles2 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let particlesConfig = {
     particles: {
+      color: { value: "#ffff" },
       move: {
+        direction: "none",
         enable: true,
+        outModes: { default: "out" },
         random: true,
         speed: 0.1,
         straight: false
       },
+      links: { enable: false, color: "#000" },
+      number: { value: 100 },
       opacity: {
         animation: { enable: true, speed: 1, sync: false },
         value: { min: 0, max: 1 }
@@ -10639,13 +8587,15 @@ const Particles3 = create_ssr_component(($$result, $$props, $$bindings, slots) =
       size: { value: { min: 1, max: 3 } }
     }
   };
-  let particlesInit = async (main) => {
-    await loadFull(main);
-  };
+  void particlesInit(async (engine) => {
+    await loadSlim(engine);
+  });
   return `${validate_component(missing_component, "svelte:component").$$render(
     $$result,
     {
       id: "tsparticles",
+      class: "foo bar",
+      style: "",
       options: particlesConfig,
       particlesInit
     },
@@ -10655,14 +8605,15 @@ const Particles3 = create_ssr_component(($$result, $$props, $$bindings, slots) =
 });
 const mainLogo = "/_app/immutable/assets/coffee-code-studio-logo.9f0585f5.png";
 const Navbar = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  return `<header aria-label="Site Header" class="sticky top-0 bg-white dark:bg-gray-900"><div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8"><div class="flex h-16 items-center justify-between"><div class="flex-1 md:flex md:items-center md:gap-12"><a class="block text-teal-600 dark:text-teal-300" href="/"><span class="sr-only">Home</span>
+  return `
+<header aria-label="Site Header" class="sticky top-0 bg-white dark:bg-gray-900"><div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8"><div class="flex h-16 items-center justify-between"><div class="flex-1 md:flex md:items-center md:gap-12"><a class="block text-teal-600 dark:text-teal-300" href="/"><span class="sr-only">Home</span>
 					<img class="pointer-events-none"${add_attribute("src", mainLogo, 0)} alt="Coffee Code Studio"${add_attribute("width", 64, 0)}${add_attribute("height", 64, 0)}></a></div>
 			<div class="md:flex md:items-center md:gap-12"><nav aria-label="Site Nav" class="hidden md:block"><ul class="flex items-center gap-6 text-sm"><li><a class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" href="#home">Home
 							</a></li>
 						<li><a class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" href="#about">About
 							</a></li>
 						<li><a class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" href="#services">Services</a></li>
-						<li><a class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" href="#blog">Blog</a></li>
+						
 						<li><a class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" href="#contact">Contact</a></li></ul></nav>
 				<div><div class="block md:hidden"><button class="rounded bg-gray-100 p-2 text-gray-600 transition hover:text-gray-600/75 dark:bg-gray-800 dark:text-white dark:hover:text-white/75" aria-label="Toggle mobile navigation"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg></button></div></div></div></div>
 		${``}</div></header>`;
@@ -10673,9 +8624,17 @@ const Footer = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 		</div>
 		<p class="mt-4 text-center text-sm text-gray-500 dark:text-gray-400 lg:mt-0 lg:text-right">Copyright © ${escape(currentYear)} Coffee Code Studio. All rights reserved.</p></div></div></footer>`;
 });
+const mesh = "_mesh_127wb_11";
+const styles = {
+  mesh,
+  "bg-mesh-animation": "_bg-mesh-animation_127wb_1"
+};
+const Background2 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  return `<div${add_attribute("class", `${styles.mesh}`, 0)}></div>`;
+});
 const _layout_svelte_svelte_type_style_lang = "";
 const css = {
-  code: "@media(prefers-color-scheme: dark){body{background-color:#111827}}@media(prefers-color-scheme: light){body{background-color:#ffffff}}body{scroll-behavior:smooth}",
+  code: "@media(prefers-color-scheme: dark){body{background-color:#111827}}@media(prefers-color-scheme: light){body{background-color:#ffffff}}body{scroll-behavior:smooth}@keyframes svelte-1ame8ch-bg-mesh-animation{0%,100%{transform:translate(-50%, -60%)}50%{transform:translate(-60%, -50%)}}",
   map: null
 };
 const Layout = create_ssr_component(($$result, $$props, $$bindings, slots) => {
@@ -10687,12 +8646,13 @@ const Layout = create_ssr_component(($$result, $$props, $$bindings, slots) => {
         padding: 1rem;
         `);
   $$result.css.add(css);
-  return `${validate_component(Particles3, "Particles").$$render($$result, {}, {}, {})}
+  return `${validate_component(Background2, "Background").$$render($$result, {}, {}, {})}
+
+${validate_component(Particles2, "Particles").$$render($$result, {}, {}, {})}
 
 ${validate_component(Navbar, "Navbar").$$render($$result, {}, {}, {})}
 
 <div class="container justify-center items-center max-w-full">${slots.default ? slots.default({}) : ``}
-
     ${validate_component(Footer, "Footer").$$render($$result, {}, {}, {})}</div>`;
 });
 export {

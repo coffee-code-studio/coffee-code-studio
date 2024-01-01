@@ -4,6 +4,7 @@
     import { particlesInit } from '@tsparticles/svelte'
     import type { Engine } from '@tsparticles/engine'
 
+    
     let ParticlesComponent: any
 
     onMount(async () => {

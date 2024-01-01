@@ -8,9 +8,9 @@ return {
 	appDir: "_app",
 	appPath: "_app",
 	assets: new Set(["ccs-alt-logo.png","coffee-code-studio-logo.png","favicon.ico","importance-of-seo.png","role-of-typography.png","security-measures.png"]),
-	mimeTypes: {".png":"image/png",".ico":"image/vnd.microsoft.icon"},
+	mimeTypes: {".png":"image/png"},
 	_: {
-		client: {"start":"_app/immutable/entry/start.bcc5f1da.js","app":"_app/immutable/entry/app.cb828e3d.js","imports":["_app/immutable/entry/start.bcc5f1da.js","_app/immutable/chunks/index.2e2480ce.js","_app/immutable/chunks/index.fa92fb55.js","_app/immutable/entry/app.cb828e3d.js","_app/immutable/chunks/preload-helper.cf010ec4.js","_app/immutable/chunks/index.2e2480ce.js"],"stylesheets":[],"fonts":[]},
+		client: {"start":"_app/immutable/entry/start.c783445a.js","app":"_app/immutable/entry/app.30c62326.js","imports":["_app/immutable/entry/start.c783445a.js","_app/immutable/chunks/index.59519673.js","_app/immutable/chunks/index.a7b8e33d.js","_app/immutable/entry/app.30c62326.js","_app/immutable/chunks/preload-helper.a4192956.js","_app/immutable/chunks/index.59519673.js"],"stylesheets":[],"fonts":[]},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),
@@ -29,55 +29,48 @@ return {
 				pattern: /^\/$/,
 				params: [],
 				page: { layouts: [0,], errors: [1,], leaf: 2 },
-				endpoint: __memo(() => import('./entries/endpoints/_server.ts.js'))
+				endpoint: null
 			},
 			{
-				id: "/about-old",
-				pattern: /^\/about-old\/?$/,
+				id: "/consulting",
+				pattern: /^\/consulting\/?$/,
 				params: [],
 				page: { layouts: [0,], errors: [1,], leaf: 3 },
 				endpoint: null
 			},
 			{
-				id: "/blog-old",
-				pattern: /^\/blog-old\/?$/,
+				id: "/free-hosting",
+				pattern: /^\/free-hosting\/?$/,
 				params: [],
 				page: { layouts: [0,], errors: [1,], leaf: 4 },
 				endpoint: null
 			},
 			{
-				id: "/blog-old/essential-security-measures-for-web-development",
-				pattern: /^\/blog-old\/essential-security-measures-for-web-development\/?$/,
+				id: "/logo-design",
+				pattern: /^\/logo-design\/?$/,
 				params: [],
 				page: { layouts: [0,], errors: [1,], leaf: 5 },
 				endpoint: null
 			},
 			{
-				id: "/blog-old/the-importance-of-seo",
-				pattern: /^\/blog-old\/the-importance-of-seo\/?$/,
+				id: "/mobile-apps",
+				pattern: /^\/mobile-apps\/?$/,
 				params: [],
 				page: { layouts: [0,], errors: [1,], leaf: 6 },
-				endpoint: null
-			},
-			{
-				id: "/blog-old/the-role-of-typography-in-web-design",
-				pattern: /^\/blog-old\/the-role-of-typography-in-web-design\/?$/,
-				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 7 },
-				endpoint: null
-			},
-			{
-				id: "/contact-old",
-				pattern: /^\/contact-old\/?$/,
-				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 8 },
 				endpoint: null
 			},
 			{
 				id: "/sent",
 				pattern: /^\/sent\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 9 },
+				page: { layouts: [0,], errors: [1,], leaf: 7 },
+				endpoint: null
+			},
+			{
+				id: "/seo-digital-marketing",
+				pattern: /^\/seo-digital-marketing\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 8 },
 				endpoint: null
 			},
 			{
@@ -86,6 +79,13 @@ return {
 				params: [],
 				page: null,
 				endpoint: __memo(() => import('./entries/endpoints/sitemap.xml/_server.ts.js'))
+			},
+			{
+				id: "/web-design-development",
+				pattern: /^\/web-design-development\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 9 },
+				endpoint: null
 			}
 		],
 		matchers: async () => {
