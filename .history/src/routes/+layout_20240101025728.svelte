@@ -73,7 +73,7 @@
 
 <Background />
 
-<!---<Particles />--->
+<<Particles />
 
 <Navbar />
 

@@ -10,7 +10,7 @@ return {
 	assets: new Set(["ccs-alt-logo.png","coffee-code-studio-logo.png","favicon.ico","importance-of-seo.png","role-of-typography.png","security-measures.png"]),
 	mimeTypes: {".png":"image/png"},
 	_: {
-		client: {"start":"_app/immutable/entry/start.c783445a.js","app":"_app/immutable/entry/app.30c62326.js","imports":["_app/immutable/entry/start.c783445a.js","_app/immutable/chunks/index.59519673.js","_app/immutable/chunks/index.a7b8e33d.js","_app/immutable/entry/app.30c62326.js","_app/immutable/chunks/preload-helper.a4192956.js","_app/immutable/chunks/index.59519673.js"],"stylesheets":[],"fonts":[]},
+		client: {"start":"_app/immutable/entry/start.5183531e.js","app":"_app/immutable/entry/app.30c62326.js","imports":["_app/immutable/entry/start.5183531e.js","_app/immutable/chunks/index.59519673.js","_app/immutable/chunks/index.a7b8e33d.js","_app/immutable/entry/app.30c62326.js","_app/immutable/chunks/preload-helper.a4192956.js","_app/immutable/chunks/index.59519673.js"],"stylesheets":[],"fonts":[]},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),

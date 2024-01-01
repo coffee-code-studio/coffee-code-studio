@@ -20,7 +20,7 @@ const config: UserConfig = {
 	},
 	resolve: {
 		alias: {
-			'@tsparticles/slim': path.resolve(__dirname, './node_modules/@tsparticles/slim'),
+			'@tsparticles/slim': path.resolve(__dirname, 'node_modules/@tsparticles/slim'),
 		}
 	},
 	ssr: {
