@@ -24,7 +24,7 @@ const config: UserConfig = {
 		}
 	},
 	ssr: {
-		noExternal: ["tsparticles", "@tsparticles/slim", "@tsparticles/engine", "@tsparticles/svelte"],
+		noExternal: ["tsparticles", "@tsparticles/slim", "@tsparticles/engine", "@tsparticles/svelte", 'three'],
 	},
 	server: {
 		proxy: {

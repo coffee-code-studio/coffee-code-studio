@@ -4,12 +4,28 @@
   import lightDownArrow from '$lib/assets/light-down-arrow.png'
   import darkDownArrow from '$lib/assets/dark-down-arrow.png'
   import codeImage from '$lib/assets/code.png'
-  import image3D from '../3d.module.css'
   import { smoothScroll } from '../utils/smoothScroll'
-  //
+  import Image3D from '$lib/Image3D.svelte'
 
   let prefersDarkTheme: any
   let mediaQuery: any
+  let opacity = 1
+
+
+  const checkScroll = () => {
+    const threshold = 100
+    const maxScroll = 500
+    const scrollY = window.scrollY
+
+    if (scrollY < threshold) {
+      opacity = 1;
+    } else if (scrollY > maxScroll) {
+      opacity = 0;
+    } else {
+      opacity = 1 - (scrollY - threshold) / (maxScroll - threshold);
+    }
+  }
+
 
   onMount(() => {
     mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -20,9 +36,11 @@
     }
 
     mediaQuery.addEventListener('change', changeHandler)
+    window.addEventListener('scroll', checkScroll)
 
     onDestroy(() => {
       mediaQuery.removeEventListener('change', changeHandler)
+      window.removeEventListener('scroll', checkScroll)
     })
   })
 </script>
@@ -83,9 +101,9 @@
       {#if !$isMenuOpenStore}
         <div class="{prefersDarkTheme ? 'text-gray-900' : 'text-white'} mt-12">
             {#if prefersDarkTheme}
-                <img src={lightDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20">
+                <img src={lightDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20" style="opacity: {opacity}">
             {:else}
-                <img src={darkDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20">
+                <img src={darkDownArrow} alt="Scroll down" class="mx-auto w-40 h-20 animate-bounce sm:w-40 sm:h-12 md:w-40 md:h-16 lg:w-40 lg:h-20 xl:w-40 xl:h-20" style="opacity: {opacity}">
             {/if}
         </div>
       {/if}
@@ -105,13 +123,17 @@
     <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
       <!---div class="relative h-64 overflow-hidden sm:h-80 lg:h-full">-->
       <div class={`relative h-64 overflow-hidden sm:h-80 lg:h-full ${$isMenuOpenStore ? 'hidden' : ''}`}>
+        <Image3D />
+        <!---
         <img
           alt="Party"
           src={codeImage}
           draggable="false"
           class="absolute inset-0 h-full w-full object-cover pointer-events-none opacity-50"
         />
+        --->
       </div>
+      <!---class="absolute inset-0 h-full w-full object-cover pointer-events-none opacity-50"--->
 
       <div class="lg:py-16">
         <article class="space-y-4 text-lg text-gray-500 dark:text-gray-300">

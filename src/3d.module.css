@@ -1,16 +1,19 @@
 .box {
-    width: 250px; /* Adjust as needed */
-    aspect-ratio: 1; /* Maintains a 1:1 aspect ratio */
+    position: absolute;
+    opacity: 0.6;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 1;
     display: grid;
-    /*outline: 5px solid #111827;*/
-    outline: 5px solid green;
+    /*outline: 5px solid green;*/
     transition: .5s;
     cursor: pointer;
     overflow: hidden;
-    transform: perspective(400px) rotateY(8deg); /* Initial 3D effect */
+    transform: perspective(400px) rotateY(8deg);
 }
 
-.box img {
+.boxImage {
     width: 120%;
     height: 100%;
     object-fit: cover;
@@ -19,9 +22,40 @@
 }
 
 .box:hover {
-    transform: perspective(400px) rotateY(-8deg); /* Hover effect */
+    transform: perspective(400px) rotateY(-8deg);
 }
 
-.box:hover img {
-    transform: translate(-16.66%); /* Image shift on hover */
+.box:hover .boxImage {
+    transform: translate(-16.6%);
 }
+/*
+.box {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 1;
+    display: grid;
+    outline: 5px solid green;
+    transition: .5s;
+    cursor: pointer;
+    overflow: hidden;
+    transform: perspective(400px) rotateY(8deg);
+}
+
+.boxImage {
+    width: 120%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    transition: .5s;
+}
+
+.box:hover {
+    transform: perspective(400px) rotateY(-8deg);
+}
+
+.box:hover .boxImage {
+    transform: translate(-16.66%);
+}
+*/
