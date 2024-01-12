@@ -3,29 +3,30 @@
   import { isMenuOpenStore } from '$lib/stores'
   import lightDownArrow from '$lib/assets/light-down-arrow.png'
   import darkDownArrow from '$lib/assets/dark-down-arrow.png'
+  import festivityForge from '$lib/assets/festivity-forge.png'
+  import terraTint from '$lib/assets/terra-tint.png'
+  import theDevBlog from '$lib/assets/the-dev-blog.png'
   import codeImage from '$lib/assets/code.png'
   import { smoothScroll } from '../utils/smoothScroll'
   import Image3D from '$lib/Image3D.svelte'
 
-  let prefersDarkTheme: any
-  let mediaQuery: any
+  let prefersDarkTheme: boolean
+  let mediaQuery: MediaQueryList
   let opacity = 1
 
-
   const checkScroll = () => {
-    const threshold = 100
-    const maxScroll = 500
+    const threshold: number = 100
+    const maxScroll: number = 500
     const scrollY = window.scrollY
 
     if (scrollY < threshold) {
-      opacity = 1;
+      opacity = 1
     } else if (scrollY > maxScroll) {
-      opacity = 0;
+      opacity = 0
     } else {
-      opacity = 1 - (scrollY - threshold) / (maxScroll - threshold);
+      opacity = 1 - (scrollY - threshold) / (maxScroll - threshold)
     }
   }
-
 
   onMount(() => {
     mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -164,10 +165,10 @@
 
 <!------------------------- What we offer -------------------------->
 
-<section id="services" class="flex justify-center bg-white dark:bg-gray-900 mt-40">
+<section id="services" class="flex justify-center bg-white dark:bg-gray-900 mt-40 p-5">
   <div class="max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
     <div class="max-w-xl">
-      <h2 class="text-5xl font-bold sm:text-5xl text-gray-800 dark:text-white">What we offer</h2>
+      <h2 class="text-5xl font-bold sm:text-5xl text-gray-800 dark:text-white">What We Offer</h2>
     </div>
     <div class="mt-8 grid grid-cols-1 gap-8 md:mt-16 md:grid-cols-2 md:gap-12 lg:grid-cols-3">
       <div class="flex items-start">
@@ -179,7 +180,7 @@
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">SEO and Digital Marketing</h2>
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">We use a data-driven approach to optimize websites for search engines and implement effective digital marketing strategies that drive traffic and increase conversions. </p>
-          <a href="/"><p class="mt-1 text-blue-500 text-lg">Learn more...</p></a>
+          <a href="/seo-digital-marketing"><p class="mt-1 text-center text-blue-500 text-lg block w-full rounded border border-blue-600 bg-blue-600 text-white dark:text-white px-12 py-2">Learn more</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -191,7 +192,7 @@
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">Web Design and Development</h2>
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">We provide customized web design and development solutions tailored to our clients' unique needs and preferences. Our team of skilled professionals combines creativity, innovation, and expertise to deliver exceptional results. </p>
-          <a href="/"><p class="mt-1 text-blue-500 text-lg">Learn more...</p></a>
+          <a href="/web-design-development"><p class="mt-1 text-center text-blue-500 text-lg block w-full rounded border border-blue-600 bg-blue-600 text-white dark:text-white px-12 py-2">Learn more</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -203,7 +204,7 @@
         <div class="ml-4">
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">Mobile Apps</h2>
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">We develop mobile apps using the latest technologies and frameworks to deliver high-quality, user-friendly applications that meet our clients' specific requirements. </p>
-          <a href="/"><p class="mt-1 text-blue-500 text-lg">Learn more...</p></a>
+          <a href="/mobile-apps"><p class="mt-1 text-center text-blue-500 text-lg block w-full rounded border border-blue-600 bg-blue-600 text-white dark:text-white px-12 py-2">Learn more</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -217,7 +218,7 @@
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">
             We offer hosting from reliable cloud and edge services such as Netlify and Amazon AWS. Your applications will run smoothly and seamlessly across the globe, allowing you to focus on your business goals.
           </p>
-          <a href="/"><p class="mt-1 text-blue-500 text-lg">Learn more...</p></a>
+          <a href="/free-hosting"><p class="mt-1 text-center text-blue-500 text-lg block w-full rounded border border-blue-600 bg-blue-600 text-white dark:text-white px-12 py-2">Learn more</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -231,7 +232,7 @@
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">
             We create custom logo designs tailored to our clients' needs, using a collaborative approach to ensure that your vision is accurately reflected in the final product.
           </p>
-          <a href="/"><p class="mt-1 text-blue-500 text-lg">Learn more...</p></a>
+          <a href="/logo-design"><p class="mt-1 text-center text-blue-500 text-lg block w-full rounded border border-blue-600 bg-blue-600 text-white dark:text-white px-12 py-2">Learn more</p></a>
         </div>
       </div>
       <div class="flex items-start">
@@ -245,72 +246,55 @@
           <p class="mt-1 text-lg text-gray-500 dark:text-gray-300">
             We provide personalized consulting services to help businesses achieve their goals by leveraging our expertise in software development, project management, and technology strategy.
           </p>
-          <a href="/"><p class="mt-1 text-blue-500 text-lg">Learn more...</p></a>
+          <a href="/consulting"><p class="mt-1 text-center text-blue-500 text-lg block w-full rounded border border-blue-600 bg-blue-600 text-white dark:text-white px-12 py-2">Learn more</p></a>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!----------------- Our Testimonials --------------------->
-
-<section class="bg-white dark:bg-gray-900 mt-40">
+<!----------------- Our Portfolio --------------------->
+<section id="portfolio" class="bg-white dark:bg-gray-900 mt-40 p-10">
   <div class="container px-6 py-10 mx-auto">
-      <h1 class="text-5xl font-semibold text-center text-gray-800 capitalize lg:text-5xl dark:text-white">
-          What our <span class="text-blue-500 ">clients</span> say
-      </h1>
+    <h1 class="text-2xl font-semibold text-center text-gray-800 capitalize lg:text-5xl dark:text-white">Our Best Work</h1>
 
-      <section class="grid grid-cols-1 gap-8 mt-8 xl:mt-12 lg:grid-cols-2 xl:grid-cols-3">
-          <div class="p-8 border rounded-lg dark:border-gray-700">
-              <p class="leading-loose text-lg text-gray-500 dark:text-gray-400 flex gap-0.5">
-                  “Working with Coffee Code Studio was a dream come true. 
-                  The team listened to my needs and ideas and turned them into a beautiful and functional website that perfectly represents my brand. 
-                  The website is not only aesthetically pleasing but also easy to navigate and user-friendly, 
-                  ensuring that my customers have an enjoyable experience.”
-              </p>
-
-              <div class="flex items-center mt-8 -mx-2">
-                  <div class="mx-2">
-                      <h1 class="font-semibold text-gray-800 dark:text-white"><bold class="text-blue-500">- David</bold></h1>
-                  </div>
+      <div class="grid grid-cols-1 gap-8 mt-8 xl:mt-12 xl:gap-12 md:grid-cols-2 xl:grid-cols-3 w-full md:w-3/4 mx-auto">
+          <div 
+            class="overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group" 
+            style={`background-image:url(${festivityForge})`}>
+              <div
+                  class="flex flex-col justify-center w-full h-full px-8 py-4 transition-opacity duration-700 opacity-0 backdrop-blur-sm bg-gray-800/60 group-hover:opacity-100">
+                  <h2 class="mt-4 text-xl font-semibold text-white capitalize">Festivity Forge</h2>
+                  <p class="mt-2 text-lg tracking-wider text-blue-400 uppercase ">Website</p>
               </div>
           </div>
 
-          <div class="p-8 border rounded-lg dark:border-gray-700">
-              <p class="leading-loose text-lg text-gray-500 dark:text-gray-400">
-                  “What impressed me the most about Coffee Code Studio was their attention to detail and their ability to translate my vision into reality. 
-                  They were patient with me throughout the process and always kept me informed of any updates or changes. 
-                  They also provided valuable advice and insights to improve the functionality and design of my website.”
-              </p>
-
-              <div class="flex items-center mt-8 -mx-2">
-                  <div class="mx-2">
-                      <h1 class="font-semibold text-gray-800 dark:text-white"><bold class="text-blue-500">- Jacob</bold></h1>
-                  </div>
+          <div 
+            class="overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group"
+            style={`background-image:url(${terraTint})`}>
+              <div
+                  class="flex flex-col justify-center w-full h-full px-8 py-4 transition-opacity duration-700 opacity-0 backdrop-blur-sm bg-gray-800/60 group-hover:opacity-100">
+                  <h2 class="mt-4 text-xl font-semibold text-white capitalize">Terra Tint</h2>
+                  <p class="mt-2 text-lg tracking-wider text-blue-400 uppercase ">Website</p>
               </div>
           </div>
 
-          <div class="p-8 border rounded-lg dark:border-gray-700">
-              <p class="leading-loose text-lg text-gray-500 dark:text-gray-400">
-                  “I had an incredible experience collaborating with Coffee Code Studio. 
-                  Their team paid close attention to my requirements and transformed them into a stunning website that accurately reflects my brand. 
-                  The website's design is visually captivating and intuitive to use, 
-                  guaranteeing a delightful user experience for my clients.”
-              </p>
-
-              <div class="flex items-center mt-8 -mx-2">
-                  <div class="mx-2">
-                      <h1 class="font-semibold text-gray-800 dark:text-white"><bold class="text-blue-500">- Nancy</bold></h1>
-                  </div>
+          <div 
+            class="overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group"
+            style={`background-image:url(${theDevBlog})`}>
+              <div
+                  class="flex flex-col justify-center w-full h-full px-8 py-4 transition-opacity duration-700 opacity-0 backdrop-blur-sm bg-gray-800/60 group-hover:opacity-100">
+                  <h2 class="mt-4 text-xl font-semibold text-white capitalize">The Dev Blog</h2>
+                  <p class="mt-2 text-lg tracking-wider text-blue-400 uppercase ">Website</p>
               </div>
           </div>
-      </section>
+      </div>
   </div>
 </section>
 
 <!------------------- Get in Touch -------------------->
 
-<section id="contact" class="bg-white dark:bg-gray-900 mb-40 mt-40">
+<section id="contact" class="bg-white dark:bg-gray-900 mb-40 mt-40 p-5">
   <div class="py-8 lg:py-16 px-4 mx-auto max-w-screen-md">
       <h2 class="mb-4 text-5xl font-semibold text-center text-gray-900 dark:text-white">Contact Us</h2>
       <p class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-300 text-xl">Interested in our services? Have a technical question? Reach out to us.</p>

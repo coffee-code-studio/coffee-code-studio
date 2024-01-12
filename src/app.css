@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .hide-on-mobile-menu {
+        @apply hidden md:flex;
+    }
+}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { smoothScroll } from '../utils/smoothScroll'
+	import { handleNavigation } from '../utils/handleNavigation'
 	import { isMenuOpenStore } from './stores'
 	import mainLogo from '$lib/assets/coffee-code-studio-logo.png'
 
@@ -39,7 +40,12 @@
 	<div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
 			<div class="flex-1 md:flex md:items-center md:gap-12">
-				<a class="block text-teal-600 dark:text-teal-300" href="/">
+				<a 
+				 class="block text-teal-600 dark:text-teal-300" 
+				 href="#home" 
+				 use:smoothScroll 
+				 use:handleNavigation
+				>
 					<span class="sr-only">Home</span>
 					<img
 						class="pointer-events-none"
@@ -58,6 +64,7 @@
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" 
 								href="#home" 
 								use:smoothScroll
+								use:handleNavigation
 								on:click={hideMenu}>
 								Home
 							</a>
@@ -67,6 +74,7 @@
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75" 
 								href="#about" 
 								use:smoothScroll
+								use:handleNavigation
 								on:click={hideMenu}>
 								About
 							</a>
@@ -76,24 +84,25 @@
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
 								href="#services"
 								use:smoothScroll
+								use:handleNavigation
 								on:click={hideMenu}>Services</a
 							>
 						</li>
-						<!---
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="#blog"
+								href="#portfolio"
 								use:smoothScroll
-								on:click={hideMenu}>Blog</a
+								use:handleNavigation
+								on:click={hideMenu}>Portfolio</a
 							>
 						</li>
-						--->
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
 								href="#contact"
 								use:smoothScroll
+								use:handleNavigation
 								on:click={hideMenu}>Contact</a
 							>
 						</li>
@@ -136,6 +145,7 @@
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
 								href="#home"
+								use:handleNavigation
 								on:click={hideMenu}>Home</a
 							>
 						</li>
@@ -143,6 +153,7 @@
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
 								href="#about"
+								use:handleNavigation
 								on:click={hideMenu}>About</a
 							>
 						</li>
@@ -150,22 +161,23 @@
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
 								href="#services"
+								use:handleNavigation
 								on:click={hideMenu}>Services</a
 							>
 						</li>
-						<!---
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-								href="#blog"
-								on:click={hideMenu}>Blog</a
+								href="#portfolio"
+								use:handleNavigation
+								on:click={hideMenu}>Portfolio</a
 							>
 						</li>
-						--->
 						<li>
 							<a
 								class="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
 								href="#contact"
+								use:handleNavigation
 								on:click={hideMenu}>Contact</a
 							>
 						</li>
