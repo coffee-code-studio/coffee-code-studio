@@ -260,7 +260,7 @@
 
       <div class="grid grid-cols-1 gap-8 mt-8 xl:mt-12 xl:gap-12 md:grid-cols-2 xl:grid-cols-3 w-full md:w-3/4 mx-auto">
           <div 
-            class="overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group" 
+            class={`overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group ${$isMenuOpenStore ? 'hidden' : ''}`}
             style={`background-image:url(${festivityForge})`}>
               <div
                   class="flex flex-col justify-center w-full h-full px-8 py-4 transition-opacity duration-700 opacity-0 backdrop-blur-sm bg-gray-800/60 group-hover:opacity-100">
@@ -270,7 +270,7 @@
           </div>
 
           <div 
-            class="overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group"
+            class={`overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group ${$isMenuOpenStore ? 'hidden' : ''}`}
             style={`background-image:url(${terraTint})`}>
               <div
                   class="flex flex-col justify-center w-full h-full px-8 py-4 transition-opacity duration-700 opacity-0 backdrop-blur-sm bg-gray-800/60 group-hover:opacity-100">
@@ -280,7 +280,7 @@
           </div>
 
           <div 
-            class="overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group"
+            class={`overflow-hidden bg-cover bg-center rounded-lg cursor-pointer h-96 group ${$isMenuOpenStore ? 'hidden' : ''}`}
             style={`background-image:url(${theDevBlog})`}>
               <div
                   class="flex flex-col justify-center w-full h-full px-8 py-4 transition-opacity duration-700 opacity-0 backdrop-blur-sm bg-gray-800/60 group-hover:opacity-100">
