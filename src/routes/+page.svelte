@@ -265,7 +265,7 @@
               <div
                   class="flex flex-col justify-center w-full h-full px-8 py-4 transition-opacity duration-700 opacity-0 backdrop-blur-sm bg-gray-800/60 group-hover:opacity-100">
                   <h2 class="mt-4 text-xl font-semibold text-white capitalize">Festivity Forge</h2>
-                  <p class="mt-2 text-lg tracking-wider text-blue-400 uppercase ">Website</p>
+                  <a href="https://festivityforge.com"><p class="mt-2 text-lg tracking-wider text-blue-400 uppercase ">Website</p></a>
               </div>
           </div>
 
@@ -275,7 +275,7 @@
               <div
                   class="flex flex-col justify-center w-full h-full px-8 py-4 transition-opacity duration-700 opacity-0 backdrop-blur-sm bg-gray-800/60 group-hover:opacity-100">
                   <h2 class="mt-4 text-xl font-semibold text-white capitalize">Terra Tint</h2>
-                  <p class="mt-2 text-lg tracking-wider text-blue-400 uppercase ">Website</p>
+                  <a href="https://terratint-tees.xyz/"><p class="mt-2 text-lg tracking-wider text-blue-400 uppercase ">Website</p></a>
               </div>
           </div>
 
@@ -314,12 +314,12 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
 
-            <span class="mx-2 text-gray-700 truncate w-72 dark:text-gray-400 lg:text-1xl">coffeecodestudio@protonmail.com</span>
+            <span class="mx-2 text-gray-700 truncate w-72 dark:text-gray-400 lg:text-1xl">coffeecodestudio.dev@gmail.com</span>
         </p>
     </div>
 
 
-      <form action="https://submit-form.com/7eWAXhnd" class="space-y-8">
+      <form action="https://submit-form.com/tAPskiHU7" class="space-y-8">
           <div>
             <input
               type="hidden"
